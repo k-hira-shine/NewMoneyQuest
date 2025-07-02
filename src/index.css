@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: #213547;
+  background-color: #F3F4F6;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+.dark {
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #1F2937;
+}
+
+.rpg-text {
+  font-family: 'Press Start 2P', cursive, sans-serif;
+}
+
+/* RPGスタイルのボタン */
+.rpg-button {
+  @apply px-4 py-2 border-2 border-gray-800 bg-primary text-white font-rpg text-sm shadow-md hover:shadow-lg transition-all duration-200;
+  image-rendering: pixelated;
+}
+
+/* RPGスタイルのカード */
+.rpg-card {
+  @apply bg-white dark:bg-gray-800 border-2 border-gray-800 shadow-md p-4;
+  image-rendering: pixelated;
+}
+
+/* EXPバー */
+.exp-bar {
+  @apply h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden;
+}
+
+.exp-progress {
+  @apply h-full bg-secondary transition-all duration-500;
+}
+
+/* レベルアップアニメーション */
+@keyframes levelUp {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.level-up-animation {
+  animation: levelUp 1s ease-in-out;
+}
+
+/* EXP獲得アニメーション */
+@keyframes expGain {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-20px); opacity: 0; }
+}
+
+.exp-gain-animation {
+  animation: expGain 1.5s ease-out forwards;
+}
