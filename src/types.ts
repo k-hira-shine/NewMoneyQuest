@@ -33,8 +33,18 @@ export interface Expense {
   expGained: number;
 }
 
+// LocalStorage保存用のシリアライズされた支出データの型定義
+export interface SerializedExpense {
+  id: string;
+  amount: number;
+  category: SkillCategory;
+  memo: string;
+  date: string; // Dateオブジェクトを文字列として保存
+  expGained: number;
+}
+
 // LocalStorageに保存するデータの型定義
 export interface SavedData {
   profile: UserProfile;
-  expenses: Expense[];
+  expenses: SerializedExpense[];
 }

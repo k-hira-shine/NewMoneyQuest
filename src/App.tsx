@@ -3,7 +3,7 @@ import ExpenseForm from './components/ExpenseForm'
 import ExpenseList from './components/ExpenseList'
 import ProfileCard from './components/ProfileCard'
 import { UserProfile, Expense, SkillCategory } from './types'
-import { calculateExp, calculateLevel, saveUserData, loadUserData } from './utils/gameLogic'
+import { calculateLevel, saveUserData, loadUserData } from './utils/gameLogic'
 
 function App() {
   const [darkMode, setDarkMode] = useState(false)

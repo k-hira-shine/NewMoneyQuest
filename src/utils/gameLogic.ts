@@ -1,4 +1,4 @@
-import { UserProfile, Expense, SavedData } from '../types';
+import { UserProfile, Expense, SavedData, SerializedExpense } from '../types';
 
 // LocalStorageのキー
 const STORAGE_KEY = 'money_quest_data';
@@ -49,14 +49,15 @@ export const calculateExp = (amount: number, multiplier: number = 1): number => 
 export const saveUserData = (profile: UserProfile, expenses: Expense[]): void => {
   try {
     // 日付オブジェクトをISOString形式に変換
-    const serializedExpenses = expenses.map(expense => ({
+    const serializedExpenses: SerializedExpense[] = expenses.map(expense => ({
       ...expense,
-      date: expense.date instanceof Date ? expense.date.toISOString() : expense.date
+      date: expense.date instanceof Date ? expense.date.toISOString() : expense.date as string
     }));
     
+    // 型安全に変換するために、明示的に型を指定
     const data: SavedData = {
       profile,
-      expenses: serializedExpenses as Expense[]
+      expenses: serializedExpenses
     };
     
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -65,8 +66,14 @@ export const saveUserData = (profile: UserProfile, expenses: Expense[]): void =>
   }
 };
 
+// LocalStorageからロードした後にアプリで利用するデータ型
+export interface LoadedData {
+  profile: UserProfile;
+  expenses: Expense[];
+}
+
 // ユーザーデータをLocalStorageから読み込み
-export const loadUserData = (): SavedData | null => {
+export const loadUserData = (): LoadedData | null => {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     if (!data) return null;
@@ -79,10 +86,12 @@ export const loadUserData = (): SavedData | null => {
       date: new Date(expense.date)
     }));
     
-    return {
+    const loaded: LoadedData = {
       profile: parsedData.profile,
       expenses
     };
+
+    return loaded;
   } catch (error) {
     console.error('データの読み込みに失敗しました:', error);
     return null;

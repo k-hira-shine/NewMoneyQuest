@@ -12,7 +12,6 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ userProfile, levelUpAnimation
   
   // 経験値バーの進捗率を計算
   const expProgress = calculateExpProgress(totalExp);
-  const currentLevelExp = calculateExpForLevel(level);
   const nextLevelExp = calculateExpForLevel(level + 1);
   
   return (
