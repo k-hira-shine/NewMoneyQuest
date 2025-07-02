@@ -3,13 +3,14 @@ import ExpenseForm from './components/ExpenseForm'
 import ExpenseList from './components/ExpenseList'
 import ProfileCard from './components/ProfileCard'
 import { UserProfile, Expense, SkillCategory } from './types'
-import { calculateLevel, saveUserData, loadUserData } from './utils/gameLogic'
+import { calculateLevel, saveUserData, loadUserData, PENALTY_MULTIPLIER, applyExpDelta } from './utils/gameLogic'
 
 function App() {
   const [darkMode, setDarkMode] = useState(false)
   const [showExpenseForm, setShowExpenseForm] = useState(false)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [expenses, setExpenses] = useState<Expense[]>([])
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [expGainMessage, setExpGainMessage] = useState<string | null>(null)
   const [levelUpAnimation, setLevelUpAnimation] = useState(false)
 
@@ -53,7 +54,7 @@ function App() {
     localStorage.setItem('darkMode', darkMode.toString())
   }, [darkMode])
 
-  // 支出の追加処理
+  // ===================== 支出の追加処理 =====================
   const handleAddExpense = (amount: number, category: SkillCategory, memo: string) => {
     if (!userProfile) return
 
@@ -107,8 +108,61 @@ function App() {
     setShowExpenseForm(false)
   }
 
+  // ===================== 支出の更新処理 =====================
+  const handleUpdateExpense = (amount: number, category: SkillCategory, memo: string) => {
+    if (!userProfile || !editingExpense) return;
+
+    const baseExpNew = Math.floor(amount / 100);
+    const multiplierNew = userProfile.skills[category].multiplier;
+    const newExp = Math.floor(baseExpNew * multiplierNew);
+
+    // ペナルティ計算
+    const penalty = Math.ceil(editingExpense.expGained * PENALTY_MULTIPLIER);
+    const delta = -penalty + newExp;
+
+    const updatedProfile = applyExpDelta(userProfile, editingExpense.category, -penalty);
+    const finalProfile = applyExpDelta(updatedProfile, category, newExp);
+
+    // expenses 更新
+    const updatedExpenses = expenses.map((exp: Expense) =>
+      exp.id === editingExpense.id
+        ? { ...exp, amount, category, memo, expGained: newExp }
+        : exp
+    );
+
+    setUserProfile(finalProfile);
+    setExpenses(updatedExpenses);
+    saveUserData(finalProfile, updatedExpenses);
+
+    setExpGainMessage(`${delta >=0 ? '+' : ''}${delta} EXP`);
+    setTimeout(() => setExpGainMessage(null), 2000);
+
+    setEditingExpense(null);
+    setShowExpenseForm(false);
+  }
+
+  // ===================== 支出の削除処理 =====================
+  const handleDeleteExpense = (expense: Expense) => {
+    if (!userProfile) return;
+  
+
+    const penalty = Math.ceil(expense.expGained * PENALTY_MULTIPLIER);
+    const delta = -penalty;
+
+    const updatedProfile = applyExpDelta(userProfile, expense.category, delta);
+
+    const updatedExpenses = expenses.filter(e => e.id !== expense.id);
+
+    setUserProfile(updatedProfile);
+    setExpenses(updatedExpenses);
+    saveUserData(updatedProfile, updatedExpenses);
+
+    setExpGainMessage(`${delta} EXP`);
+    setTimeout(() => setExpGainMessage(null), 2000);
+  }
+
   // 今日の支出のみフィルタリング
-  const todayExpenses = expenses.filter(expense => {
+  const todayExpenses = expenses.filter((expense: Expense) => {
     const today = new Date()
     const expenseDate = new Date(expense.date)
     return (
@@ -142,7 +196,7 @@ function App() {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-rpg">今日の支出</h2>
             <button 
-              onClick={() => setShowExpenseForm(true)}
+              onClick={() => { setEditingExpense(null); setShowExpenseForm(true); }}
               className="rpg-button"
             >
               追加
@@ -150,7 +204,11 @@ function App() {
           </div>
 
           {todayExpenses.length > 0 ? (
-            <ExpenseList expenses={todayExpenses} />
+            <ExpenseList 
+              expenses={todayExpenses}
+              onEdit={(exp) => { setEditingExpense(exp); setShowExpenseForm(true); }}
+              onDelete={handleDeleteExpense}
+            />
           ) : (
             <p className="text-center py-8 rpg-card">今日の支出はまだありません</p>
           )}
@@ -160,8 +218,9 @@ function App() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
             <div className="rpg-card w-full max-w-md">
               <ExpenseForm 
-                onSubmit={handleAddExpense}
-                onCancel={() => setShowExpenseForm(false)}
+                onSubmit={editingExpense ? handleUpdateExpense : handleAddExpense}
+                onCancel={() => { setEditingExpense(null); setShowExpenseForm(false); }}
+                initialExpense={editingExpense || undefined}
               />
             </div>
           </div>

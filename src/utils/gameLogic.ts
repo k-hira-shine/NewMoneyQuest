@@ -1,7 +1,31 @@
-import { UserProfile, Expense, SavedData, SerializedExpense } from '../types';
+import { UserProfile, Expense, SavedData, SerializedExpense, SkillCategory } from '../types';
 
 // LocalStorageのキー
 const STORAGE_KEY = 'money_quest_data';
+
+// 編集・削除時のペナルティ倍率
+export const PENALTY_MULTIPLIER = 1.5;
+
+// EXP差分をプロフィールに適用するユーティリティ
+export const applyExpDelta = (profile: UserProfile, category: SkillCategory, delta: number): UserProfile => {
+  const updated = { ...profile, skills: { ...profile.skills } } as UserProfile;
+
+  // トータル EXP
+  updated.totalExp = Math.max(0, updated.totalExp + delta);
+  // 該当スキル EXP
+  const skill = { ...updated.skills[category] };
+  skill.exp = Math.max(0, skill.exp + delta);
+  updated.skills[category] = skill;
+
+  // レベル再計算
+  updated.level = calculateLevel(updated.totalExp);
+  Object.keys(updated.skills).forEach(key => {
+    const k = key as SkillCategory;
+    updated.skills[k].level = calculateLevel(updated.skills[k].exp);
+  });
+
+  return updated;
+};
 
 // 経験値からレベルを計算する関数
 export const calculateLevel = (exp: number): number => {

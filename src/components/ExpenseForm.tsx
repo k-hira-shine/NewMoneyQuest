@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { SkillCategory } from '../types';
 
+import { Expense } from '../types';
+
 interface ExpenseFormProps {
   onSubmit: (amount: number, category: SkillCategory, memo: string) => void;
   onCancel: () => void;
+  initialExpense?: Expense;
 }
 
-const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSubmit, onCancel }) => {
-  const [amount, setAmount] = useState<string>('');
-  const [category, setCategory] = useState<SkillCategory>(SkillCategory.LIFE);
-  const [memo, setMemo] = useState<string>('');
+const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSubmit, onCancel, initialExpense }) => {
+  const [amount, setAmount] = useState<string>(initialExpense ? initialExpense.amount.toString() : '');
+  const [category, setCategory] = useState<SkillCategory>(initialExpense ? initialExpense.category : SkillCategory.LIFE);
+  const [memo, setMemo] = useState<string>(initialExpense ? initialExpense.memo : '');
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -126,7 +129,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSubmit, onCancel }) => {
           type="submit"
           className="rpg-button"
         >
-          記録する
+          {initialExpense ? '更新する' : '記録する' }
         </button>
       </div>
     </form>

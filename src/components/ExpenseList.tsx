@@ -3,9 +3,11 @@ import { Expense, SkillCategory } from '../types';
 
 interface ExpenseListProps {
   expenses: Expense[];
+  onEdit?: (expense: Expense) => void;
+  onDelete?: (expense: Expense) => void;
 }
 
-const ExpenseList: React.FC<ExpenseListProps> = ({ expenses }) => {
+const ExpenseList: React.FC<ExpenseListProps> = ({ expenses, onEdit, onDelete }) => {
   // カテゴリーに応じたアイコンを取得する関数
   const getCategoryIcon = (category: SkillCategory): string => {
     switch (category) {
@@ -43,9 +45,23 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ expenses }) => {
                   {formatTime(new Date(expense.date))}
                 </p>
               </div>
-              <div className="text-right">
+              <div className="flex flex-col items-end space-y-1">
                 <p className="font-medium">¥{expense.amount.toLocaleString()}</p>
                 <p className="text-sm text-secondary">+{expense.expGained} EXP</p>
+                {onEdit && (
+                  <button
+                    type="button"
+                    onClick={() => onEdit(expense)}
+                    className="text-xs text-blue-500 hover:underline cursor-pointer"
+                  >編集</button>
+                )}
+                {onDelete && (
+                  <button
+                    type="button"
+                    onClick={() => onDelete(expense)}
+                    className="text-xs text-red-500 hover:underline cursor-pointer"
+                  >削除</button>
+                )}
               </div>
             </div>
           </li>
