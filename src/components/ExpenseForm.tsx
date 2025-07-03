@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MainCategory, Expense, getSubCategoriesByMainCategory, SubCategory } from '../types';
+import { MainCategory, Expense, getSubCategoriesByMainCategory } from '../types';
 
 interface ExpenseFormProps {
   onSubmit: (amount: number, category: MainCategory, subCategoryId: string, memo: string) => void;

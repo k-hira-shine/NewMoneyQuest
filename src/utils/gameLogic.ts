@@ -1,4 +1,4 @@
-import { UserProfile, Expense, SavedData, SerializedExpense, MainCategory, SubCategory, getSubCategoryById } from '../types';
+import { UserProfile, Expense, SavedData, SerializedExpense, MainCategory, getSubCategoryById } from '../types';
 
 // LocalStorageのキー
 const STORAGE_KEY = 'money_quest_data';
