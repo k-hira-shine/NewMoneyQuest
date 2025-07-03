@@ -1,4 +1,4 @@
-import { UserProfile, Expense, SavedData, SerializedExpense, SkillCategory } from '../types';
+import { UserProfile, Expense, SavedData, SerializedExpense, MainCategory, SubCategory, getSubCategoryById } from '../types';
 
 // LocalStorageのキー
 const STORAGE_KEY = 'money_quest_data';
@@ -6,8 +6,23 @@ const STORAGE_KEY = 'money_quest_data';
 // 編集・削除時のペナルティ倍率
 export const PENALTY_MULTIPLIER = 1.5;
 
+// メインカテゴリーのデフォルト倍率
+// 後方互換性のために残す
+export const MAIN_CATEGORY_MULTIPLIERS: { [key in MainCategory]: number } = {
+  [MainCategory.GROWTH]: 3.0,
+  [MainCategory.ENTERTAINMENT]: 1.5,
+  [MainCategory.LIFE]: 1.0
+};
+
+// メインカテゴリーのデフォルトサブカテゴリー
+export const DEFAULT_SUB_CATEGORIES: { [key in MainCategory]: string } = {
+  [MainCategory.GROWTH]: 'books',
+  [MainCategory.ENTERTAINMENT]: 'entertainment',
+  [MainCategory.LIFE]: 'food'
+};
+
 // EXP差分をプロフィールに適用するユーティリティ
-export const applyExpDelta = (profile: UserProfile, category: SkillCategory, delta: number): UserProfile => {
+export const applyExpDelta = (profile: UserProfile, category: MainCategory, delta: number): UserProfile => {
   const updated = { ...profile, skills: { ...profile.skills } } as UserProfile;
 
   // トータル EXP
@@ -20,7 +35,7 @@ export const applyExpDelta = (profile: UserProfile, category: SkillCategory, del
   // レベル再計算
   updated.level = calculateLevel(updated.totalExp);
   Object.keys(updated.skills).forEach(key => {
-    const k = key as SkillCategory;
+    const k = key as MainCategory;
     updated.skills[k].level = calculateLevel(updated.skills[k].exp);
   });
 
@@ -61,12 +76,42 @@ export const calculateExpProgress = (currentExp: number): number => {
   return expIntoLevel / levelExpRange;
 };
 
-// 支出額から基本経験値を計算
-export const calculateExp = (amount: number, multiplier: number = 1): number => {
-  // 基本経験値 = 支出額 ÷ 100（小数点以下切り捨て）
+// 当初の経験値計算関数（後方互換性のために残す）
+export const calculateExp = (amount: number, category: MainCategory): number => {
+  // 基本は100円で1EXP
   const baseExp = Math.floor(amount / 100);
-  // スキル倍率を適用
-  return Math.floor(baseExp * multiplier);
+  return Math.floor(baseExp * MAIN_CATEGORY_MULTIPLIERS[category]);
+};
+
+// サブカテゴリーを使ったEXP計算関数
+export const calculateExpWithSubCategory = (
+  amount: number, 
+  subCategoryId: string
+): number => {
+  const subCategory = getSubCategoryById(subCategoryId);
+  if (!subCategory) {
+    // サブカテゴリーが見つからない場合はメインカテゴリーのデフォルト倍率を使用
+    console.error(`サブカテゴリーID ${subCategoryId} が見つかりません`);
+    return 0;
+  }
+  
+  const baseExp = Math.floor(amount / 100);
+  return Math.floor(baseExp * subCategory.multiplier);
+};
+
+// 既存データのマイグレーション関数
+export const migrateExpensesData = (expenses: any[]): Expense[] => {
+  return expenses.map(expense => {
+    // subCategoryIdがない古いデータの場合、デフォルトのサブカテゴリーを割り当て
+    if (!expense.subCategoryId) {
+      const category = expense.category as MainCategory;
+      return {
+        ...expense,
+        subCategoryId: DEFAULT_SUB_CATEGORIES[category]
+      } as Expense;
+    }
+    return expense as Expense;
+  });
 };
 
 // ユーザーデータをLocalStorageに保存
@@ -110,9 +155,12 @@ export const loadUserData = (): LoadedData | null => {
       date: new Date(expense.date)
     }));
     
+    // 既存データのマイグレーション処理
+    const migratedExpenses = migrateExpensesData(expenses);
+    
     const loaded: LoadedData = {
       profile: parsedData.profile,
-      expenses
+      expenses: migratedExpenses
     };
 
     return loaded;

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import ExpenseForm from './components/ExpenseForm'
 import ExpenseList from './components/ExpenseList'
 import ProfileCard from './components/ProfileCard'
-import { UserProfile, Expense, SkillCategory } from './types'
+import { UserProfile, Expense, MainCategory, getSubCategoryById } from './types'
 import { calculateLevel, saveUserData, loadUserData, PENALTY_MULTIPLIER, applyExpDelta } from './utils/gameLogic'
 
 function App() {
@@ -27,9 +27,9 @@ function App() {
         level: 1,
         totalExp: 0,
         skills: {
-          [SkillCategory.GROWTH]: { level: 1, exp: 0, multiplier: 3 },
-          [SkillCategory.ENTERTAINMENT]: { level: 1, exp: 0, multiplier: 1.5 },
-          [SkillCategory.LIFE]: { level: 1, exp: 0, multiplier: 1 }
+          [MainCategory.GROWTH]: { level: 1, exp: 0, multiplier: 3 },
+          [MainCategory.ENTERTAINMENT]: { level: 1, exp: 0, multiplier: 1.5 },
+          [MainCategory.LIFE]: { level: 1, exp: 0, multiplier: 1 }
         }
       }
       setUserProfile(initialProfile)
@@ -55,19 +55,22 @@ function App() {
   }, [darkMode])
 
   // ===================== 支出の追加処理 =====================
-  const handleAddExpense = (amount: number, category: SkillCategory, memo: string) => {
+  const handleAddExpense = (amount: number, category: MainCategory, subCategoryId: string, memo: string) => {
     if (!userProfile) return
 
     // EXP計算
     const baseExp = Math.floor(amount / 100)
-    const multiplier = userProfile.skills[category].multiplier
-    const expGained = Math.floor(baseExp * multiplier)
+    const categoryMultiplier = userProfile.skills[category].multiplier
+    const subCategory = getSubCategoryById(subCategoryId)
+    const subCategoryMultiplier = subCategory ? subCategory.multiplier : 1
+    const expGained = Math.floor(baseExp * categoryMultiplier * subCategoryMultiplier)
 
     // 新しい支出データ
     const newExpense: Expense = {
       id: Date.now().toString(),
       amount,
       category,
+      subCategoryId,
       memo,
       date: new Date(),
       expGained
@@ -84,7 +87,7 @@ function App() {
 
     // スキルレベル計算
     Object.keys(updatedProfile.skills).forEach(skillKey => {
-      const skill = updatedProfile.skills[skillKey as SkillCategory]
+      const skill = updatedProfile.skills[skillKey as MainCategory]
       skill.level = calculateLevel(skill.exp)
     })
 
@@ -109,12 +112,14 @@ function App() {
   }
 
   // ===================== 支出の更新処理 =====================
-  const handleUpdateExpense = (amount: number, category: SkillCategory, memo: string) => {
+  const handleUpdateExpense = (amount: number, category: MainCategory, subCategoryId: string, memo: string) => {
     if (!userProfile || !editingExpense) return;
 
     const baseExpNew = Math.floor(amount / 100);
-    const multiplierNew = userProfile.skills[category].multiplier;
-    const newExp = Math.floor(baseExpNew * multiplierNew);
+    const categoryMultiplierNew = userProfile.skills[category].multiplier;
+    const subCategory = getSubCategoryById(subCategoryId);
+    const subCategoryMultiplier = subCategory ? subCategory.multiplier : 1;
+    const newExp = Math.floor(baseExpNew * categoryMultiplierNew * subCategoryMultiplier);
 
     // ペナルティ計算
     const penalty = Math.ceil(editingExpense.expGained * PENALTY_MULTIPLIER);
@@ -126,7 +131,7 @@ function App() {
     // expenses 更新
     const updatedExpenses = expenses.map((exp: Expense) =>
       exp.id === editingExpense.id
-        ? { ...exp, amount, category, memo, expGained: newExp }
+        ? { ...exp, amount, category, subCategoryId, memo, expGained: newExp }
         : exp
     );
 

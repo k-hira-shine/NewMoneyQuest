@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
-import { SkillCategory } from '../types';
-
-import { Expense } from '../types';
+import { MainCategory, Expense, getSubCategoriesByMainCategory, SubCategory } from '../types';
 
 interface ExpenseFormProps {
-  onSubmit: (amount: number, category: SkillCategory, memo: string) => void;
+  onSubmit: (amount: number, category: MainCategory, subCategoryId: string, memo: string) => void;
   onCancel: () => void;
   initialExpense?: Expense;
 }
 
 const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSubmit, onCancel, initialExpense }) => {
   const [amount, setAmount] = useState<string>(initialExpense ? initialExpense.amount.toString() : '');
-  const [category, setCategory] = useState<SkillCategory>(initialExpense ? initialExpense.category : SkillCategory.LIFE);
+  const [selectedMainCategory, setSelectedMainCategory] = useState<MainCategory | null>(
+    initialExpense ? initialExpense.category : null
+  );
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>(
+    initialExpense ? initialExpense.subCategoryId : ''
+  );
   const [memo, setMemo] = useState<string>(initialExpense ? initialExpense.memo : '');
   const [error, setError] = useState<string | null>(null);
 
@@ -24,8 +27,18 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSubmit, onCancel, initialEx
       return;
     }
     
+    if (!selectedMainCategory) {
+      setError('カテゴリーを選択してください');
+      return;
+    }
+    
+    if (!selectedSubCategoryId) {
+      setError('サブカテゴリーを選択してください');
+      return;
+    }
+    
     // 送信
-    onSubmit(Number(amount), category, memo);
+    onSubmit(Number(amount), selectedMainCategory, selectedSubCategoryId, memo);
   };
 
   return (
@@ -48,53 +61,84 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSubmit, onCancel, initialEx
         />
       </div>
       
-      {/* カテゴリー選択 */}
+      {/* メインカテゴリー選択 */}
       <div>
-        <label className="block mb-2 font-medium">カテゴリー</label>
+        <label className="block mb-2 font-medium">メインカテゴリー</label>
         <div className="grid grid-cols-3 gap-2">
           <button
             type="button"
             className={`p-3 flex flex-col items-center justify-center border-2 rounded ${
-              category === SkillCategory.GROWTH
+              selectedMainCategory === MainCategory.GROWTH
                 ? 'bg-primary text-white border-primary'
                 : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
             }`}
-            onClick={() => setCategory(SkillCategory.GROWTH)}
+            onClick={() => {
+              setSelectedMainCategory(MainCategory.GROWTH);
+              setSelectedSubCategoryId('');
+            }}
           >
             <span className="text-2xl mb-1">🎓</span>
             <span className="text-xs">成長スキル</span>
-            <span className="text-xs text-yellow-400">x3 EXP</span>
           </button>
           
           <button
             type="button"
             className={`p-3 flex flex-col items-center justify-center border-2 rounded ${
-              category === SkillCategory.ENTERTAINMENT
+              selectedMainCategory === MainCategory.ENTERTAINMENT
                 ? 'bg-primary text-white border-primary'
                 : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
             }`}
-            onClick={() => setCategory(SkillCategory.ENTERTAINMENT)}
+            onClick={() => {
+              setSelectedMainCategory(MainCategory.ENTERTAINMENT);
+              setSelectedSubCategoryId('');
+            }}
           >
             <span className="text-2xl mb-1">🎉</span>
             <span className="text-xs">娯楽スキル</span>
-            <span className="text-xs text-yellow-400">x1.5 EXP</span>
           </button>
           
           <button
             type="button"
             className={`p-3 flex flex-col items-center justify-center border-2 rounded ${
-              category === SkillCategory.LIFE
+              selectedMainCategory === MainCategory.LIFE
                 ? 'bg-primary text-white border-primary'
                 : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
             }`}
-            onClick={() => setCategory(SkillCategory.LIFE)}
+            onClick={() => {
+              setSelectedMainCategory(MainCategory.LIFE);
+              setSelectedSubCategoryId('');
+            }}
           >
             <span className="text-2xl mb-1">🍔</span>
             <span className="text-xs">生活スキル</span>
-            <span className="text-xs text-yellow-400">x1 EXP</span>
           </button>
         </div>
       </div>
+      
+      {/* サブカテゴリー選択 */}
+      {selectedMainCategory && (
+        <div>
+          <label className="block mb-2 font-medium">サブカテゴリー</label>
+          <div className="grid grid-cols-2 gap-2">
+            {getSubCategoriesByMainCategory(selectedMainCategory).map(subCat => (
+              <button
+                key={subCat.id}
+                type="button"
+                onClick={() => setSelectedSubCategoryId(subCat.id)}
+                className={`p-3 rounded-lg border-2 ${
+                  selectedSubCategoryId === subCat.id 
+                    ? 'border-primary bg-primary/10' 
+                    : 'border-gray-300 dark:border-gray-600'
+                }`}
+              >
+                <div className="text-2xl">{subCat.icon}</div>
+                <div className="text-sm">{subCat.name}</div>
+                <div className="text-xs text-yellow-400">x{subCat.multiplier} EXP</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       
       {/* メモ入力 */}
       <div>

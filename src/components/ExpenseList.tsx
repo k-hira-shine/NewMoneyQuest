@@ -1,5 +1,5 @@
 import React from 'react';
-import { Expense, SkillCategory } from '../types';
+import { Expense, MainCategory, getSubCategoryById } from '../types';
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -9,13 +9,13 @@ interface ExpenseListProps {
 
 const ExpenseList: React.FC<ExpenseListProps> = ({ expenses, onEdit, onDelete }) => {
   // カテゴリーに応じたアイコンを取得する関数
-  const getCategoryIcon = (category: SkillCategory): string => {
+  const getCategoryIcon = (category: MainCategory): string => {
     switch (category) {
-      case SkillCategory.GROWTH:
+      case MainCategory.GROWTH:
         return '🎓';
-      case SkillCategory.ENTERTAINMENT:
+      case MainCategory.ENTERTAINMENT:
         return '🎉';
-      case SkillCategory.LIFE:
+      case MainCategory.LIFE:
         return '🍔';
       default:
         return '💰';
@@ -41,9 +41,16 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ expenses, onEdit, onDelete })
                   <span className="mr-2 text-lg">{getCategoryIcon(expense.category)}</span>
                   <span className="font-medium">{expense.memo || '支出'}</span>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {formatTime(new Date(expense.date))}
-                </p>
+                <div className="flex items-center mt-1">
+                  {expense.subCategoryId && (
+                    <span className="text-xs bg-gray-100 dark:bg-gray-700 rounded-full px-2 py-0.5 mr-2">
+                      {getSubCategoryById(expense.subCategoryId)?.icon} {getSubCategoryById(expense.subCategoryId)?.name}
+                    </span>
+                  )}
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    {formatTime(new Date(expense.date))}
+                  </p>
+                </div>
               </div>
               <div className="flex flex-col items-end space-y-1">
                 <p className="font-medium">¥{expense.amount.toLocaleString()}</p>
