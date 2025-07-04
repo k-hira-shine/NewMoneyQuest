@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import ExpenseForm from './components/ExpenseForm'
 import ExpenseList from './components/ExpenseList'
 import ProfileCard from './components/ProfileCard'
+import NameEditModal from './components/NameEditModal'
 import { UserProfile, Expense, MainCategory, getSubCategoryById } from './types'
 import { calculateLevel, saveUserData, loadUserData, PENALTY_MULTIPLIER, applyExpDelta } from './utils/gameLogic'
 
@@ -13,6 +14,7 @@ function App() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [expGainMessage, setExpGainMessage] = useState<string | null>(null)
   const [levelUpAnimation, setLevelUpAnimation] = useState(false)
+  const [showNameEditModal, setShowNameEditModal] = useState(false)
 
   // 初期データのロード
   useEffect(() => {
@@ -166,6 +168,16 @@ function App() {
     setTimeout(() => setExpGainMessage(null), 2000);
   }
 
+  // ===================== 名前更新処理 =====================
+  const handleUpdateName = (newName: string) => {
+    if (!userProfile) return
+
+    const updatedProfile = { ...userProfile, name: newName }
+    setUserProfile(updatedProfile)
+    saveUserData(updatedProfile, expenses)
+    setShowNameEditModal(false)
+  }
+
   // 今日の支出のみフィルタリング
   const todayExpenses = expenses.filter((expense: Expense) => {
     const today = new Date()
@@ -194,7 +206,8 @@ function App() {
       <main className="max-w-md mx-auto">
         <ProfileCard 
           userProfile={userProfile} 
-          levelUpAnimation={levelUpAnimation} 
+          levelUpAnimation={levelUpAnimation}
+          onNameEdit={() => setShowNameEditModal(true)}
         />
 
         <div className="mt-8">
@@ -235,6 +248,14 @@ function App() {
           <div className="fixed top-1/4 left-1/2 transform -translate-x-1/2 exp-gain-animation">
             <p className="font-rpg text-xl text-secondary">{expGainMessage}</p>
           </div>
+        )}
+
+        {showNameEditModal && (
+          <NameEditModal
+            currentName={userProfile.name}
+            onSubmit={handleUpdateName}
+            onCancel={() => setShowNameEditModal(false)}
+          />
         )}
       </main>
     </div>

@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Quest - RPG風家計簿アプリ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8B5CF6;
+            --secondary: #10B981;
+            --accent: #F59E0B;
+            --light: #F3F4F6;
+            --dark: #1F2937;
+            --gray-100: #F3F4F6;
+            --gray-600: #6B7280;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, #667eea 100%);
+            color: #1F2937;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+            color: #F9FAFB;
+        }
+
+        .font-rpg {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 18px;
+            color: var(--primary);
+        }
+
+        .dark-mode-btn {
+            padding: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .rpg-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        body.dark .rpg-card {
+            background: rgba(31, 41, 55, 0.95);
+            border-color: rgba(107, 114, 128, 0.2);
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .avatar {
+            width: 64px;
+            height: 64px;
+            background: var(--gray-100);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-right: 16px;
+        }
+
+        body.dark .avatar {
+            background: var(--gray-700);
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .name-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .player-name {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 16px;
+            margin-right: 8px;
+        }
+
+        .edit-btn {
+            background: none;
+            border: none;
+            color: #3B82F6;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .edit-btn:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .level-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .level {
+            font-family: 'Press Start 2P', monospace;
+            color: var(--primary);
+            margin-right: 8px;
+        }
+
+        .exp-bar {
+            width: 100%;
+            height: 12px;
+            background: var(--gray-100);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        body.dark .exp-bar {
+            background: var(--gray-700);
+        }
+
+        .exp-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            transition: width 0.5s ease;
+        }
+
+        .skills-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .skill-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: var(--gray-100);
+            border-radius: 8px;
+        }
+
+        body.dark .skill-item {
+            background: var(--gray-700);
+        }
+
+        .skill-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .skill-icon {
+            font-size: 18px;
+            margin-right: 8px;
+        }
+
+        .expenses-section h2 {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+
+        .add-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-btn:hover {
+            background: #7C3AED;
+            transform: translateY(-2px);
+        }
+
+        .expense-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        body.dark .expense-item {
+            border-bottom-color: var(--gray-700);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            color: #1F2937;
+        }
+
+        body.dark .modal-content {
+            background: var(--gray-800);
+            color: #F9FAFB;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--gray-100);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        body.dark .form-group input {
+            background: var(--gray-700);
+            border-color: var(--gray-600);
+            color: white;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--gray-100);
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            flex: 1;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        .error {
+            color: #DC2626;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .success-message {
+            position: fixed;
+            top: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--secondary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 12px;
+            z-index: 2000;
+            display: none;
+        }
+
+        .level-up-animation {
+            animation: levelUp 1.5s ease-in-out;
+        }
+
+        @keyframes levelUp {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .exp-gain-animation {
+            animation: expGain 2s ease-out forwards;
+        }
+
+        @keyframes expGain {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-50px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="header-title">Money Quest</h1>
+            <button class="dark-mode-btn" onclick="toggleDarkMode()">
+                <span id="darkModeIcon">🌙</span>
+            </button>
+        </header>
+
+        <main>
+            <!-- プロフィールカード -->
+            <div class="rpg-card" id="profileCard">
+                <div class="profile-section">
+                    <div class="avatar">👤</div>
+                    <div class="profile-info">
+                        <div class="name-section">
+                            <h2 class="player-name" id="playerName">プレイヤー</h2>
+                            <button class="edit-btn" onclick="openNameEditModal()" title="名前を編集">✏️</button>
+                        </div>
+                        <div class="level-info">
+                            <span class="level">Lv. <span id="playerLevel">1</span></span>
+                            <span style="font-size: 12px; color: var(--gray-600);">
+                                (<span id="currentExp">0</span> / <span id="nextLevelExp">100</span> EXP)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 経験値バー -->
+                <div class="exp-bar">
+                    <div class="exp-progress" id="expProgress" style="width: 0%"></div>
+                </div>
+
+                <!-- スキル一覧 -->
+                <div class="skills-grid">
+                    <div class="skill-item">
+                        <div class="skill-left">
+                            <span class="skill-icon">🎓</span>
+                            <span>成長スキル</span>
+                        </div>
+                        <div>
+                            <span class="font-rpg" style="font-size: 12px;">Lv.<span id="growthLevel">1</span></span>
+                            <span style="font-size: 10px; color: var(--gray-600); margin-left: 8px;">(x3.0)</span>
+                        </div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-left">
+                            <span class="skill-icon">🎉</span>
+                            <span>娯楽スキル</span>
+                        </div>
+                        <div>
+                            <span class="font-rpg" style="font-size: 12px;">Lv.<span id="entertainmentLevel">1</span></span>
+                            <span style="font-size: 10px; color: var(--gray-600); margin-left: 8px;">(x1.5)</span>
+                        </div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-left">
+                            <span class="skill-icon">🍔</span>
+                            <span>生活スキル</span>
+                        </div>
+                        <div>
+                            <span class="font-rpg" style="font-size: 12px;">Lv.<span id="lifeLevel">1</span></span>
+                            <span style="font-size: 10px; color: var(--gray-600); margin-left: 8px;">(x1.0)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 支出セクション -->
+            <div class="expenses-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2>今日の支出</h2>
+                    <button class="add-btn" onclick="openExpenseModal()">追加</button>
+                </div>
+
+                <div class="rpg-card">
+                    <div id="expensesList">
+                        <p style="text-align: center; padding: 32px; color: var(--gray-600);">
+                            今日の支出はまだありません
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 名前編集モーダル -->
+    <div id="nameEditModal" class="modal">
+        <div class="modal-content">
+            <h2 class="font-rpg" style="text-align: center; margin-bottom: 16px;">名前を変更</h2>
+            <form id="nameEditForm">
+                <div class="form-group">
+                    <label for="newPlayerName">新しい名前</label>
+                    <input type="text" id="newPlayerName" maxlength="20" placeholder="プレイヤー">
+                    <div id="nameError" class="error" style="display: none;"></div>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn-cancel" onclick="closeNameEditModal()">キャンセル</button>
+                    <button type="submit" class="btn-submit">変更する</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 支出追加モーダル -->
+    <div id="expenseModal" class="modal">
+        <div class="modal-content">
+            <h2 class="font-rpg" style="text-align: center; margin-bottom: 16px;">支出を記録</h2>
+            <form id="expenseForm">
+                <div class="form-group">
+                    <label for="expenseAmount">金額 (円)</label>
+                    <input type="number" id="expenseAmount" placeholder="1000">
+                </div>
+                <div class="form-group">
+                    <label>カテゴリー</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px;">
+                        <button type="button" class="category-btn" data-category="growth" style="padding: 12px; border: 2px solid var(--gray-100); border-radius: 8px; background: transparent; cursor: pointer;">
+                            <div style="font-size: 20px;">🎓</div>
+                            <div style="font-size: 10px;">成長</div>
+                        </button>
+                        <button type="button" class="category-btn" data-category="entertainment" style="padding: 12px; border: 2px solid var(--gray-100); border-radius: 8px; background: transparent; cursor: pointer;">
+                            <div style="font-size: 20px;">🎉</div>
+                            <div style="font-size: 10px;">娯楽</div>
+                        </button>
+                        <button type="button" class="category-btn" data-category="life" style="padding: 12px; border: 2px solid var(--gray-100); border-radius: 8px; background: transparent; cursor: pointer;">
+                            <div style="font-size: 20px;">🍔</div>
+                            <div style="font-size: 10px;">生活</div>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="expenseMemo">メモ (任意)</label>
+                    <input type="text" id="expenseMemo" placeholder="ランチ、書籍など">
+                </div>
+                <div id="expenseError" class="error" style="display: none;"></div>
+                <div class="btn-group">
+                    <button type="button" class="btn-cancel" onclick="closeExpenseModal()">キャンセル</button>
+                    <button type="submit" class="btn-submit">記録する</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 成功メッセージ -->
+    <div id="successMessage" class="success-message"></div>
+
+    <script>
+        // ゲームデータ
+        let gameData = {
+            playerName: 'プレイヤー',
+            level: 1,
+            totalExp: 0,
+            skills: {
+                growth: { level: 1, exp: 0, multiplier: 3.0 },
+                entertainment: { level: 1, exp: 0, multiplier: 1.5 },
+                life: { level: 1, exp: 0, multiplier: 1.0 }
+            },
+            expenses: []
+        };
+
+        let selectedCategory = null;
+
+        // レベル計算
+        function calculateLevel(exp) {
+            let level = 1;
+            while (calculateExpForLevel(level + 1) <= exp) {
+                level++;
+            }
+            return level;
+        }
+
+        function calculateExpForLevel(level) {
+            return Math.floor(100 * Math.pow(level, 1.5));
+        }
+
+        function calculateExpProgress(currentExp) {
+            const currentLevel = calculateLevel(currentExp);
+            const currentLevelExp = calculateExpForLevel(currentLevel);
+            const nextLevelExp = calculateExpForLevel(currentLevel + 1);
+            const levelExpRange = nextLevelExp - currentLevelExp;
+            const expIntoLevel = currentExp - currentLevelExp;
+            return expIntoLevel / levelExpRange;
+        }
+
+        // データ保存・読み込み
+        function saveGameData() {
+            localStorage.setItem('moneyQuestData', JSON.stringify(gameData));
+        }
+
+        function loadGameData() {
+            const saved = localStorage.getItem('moneyQuestData');
+            if (saved) {
+                gameData = { ...gameData, ...JSON.parse(saved) };
+            }
+        }
+
+        // UI更新
+        function updateUI() {
+            document.getElementById('playerName').textContent = gameData.playerName;
+            document.getElementById('playerLevel').textContent = gameData.level;
+            document.getElementById('currentExp').textContent = Math.floor(gameData.totalExp);
+            document.getElementById('nextLevelExp').textContent = calculateExpForLevel(gameData.level + 1);
+            
+            const progress = calculateExpProgress(gameData.totalExp) * 100;
+            document.getElementById('expProgress').style.width = `${progress}%`;
+
+            document.getElementById('growthLevel').textContent = gameData.skills.growth.level;
+            document.getElementById('entertainmentLevel').textContent = gameData.skills.entertainment.level;
+            document.getElementById('lifeLevel').textContent = gameData.skills.life.level;
+
+            updateExpensesList();
+        }
+
+        function updateExpensesList() {
+            const container = document.getElementById('expensesList');
+            const todayExpenses = gameData.expenses.filter(expense => {
+                const expenseDate = new Date(expense.date);
+                const today = new Date();
+                return expenseDate.toDateString() === today.toDateString();
+            });
+
+            if (todayExpenses.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 32px; color: var(--gray-600);">今日の支出はまだありません</p>';
+                return;
+            }
+
+            container.innerHTML = todayExpenses.map(expense => `
+                <div class="expense-item">
+                    <div>
+                        <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                            <span style="font-size: 18px; margin-right: 8px;">${getCategoryIcon(expense.category)}</span>
+                            <span style="font-weight: 600;">${expense.memo || '支出'}</span>
+                        </div>
+                        <div style="font-size: 12px; color: var(--gray-600);">
+                            ${new Date(expense.date).toLocaleTimeString('ja-JP', {hour: '2-digit', minute: '2-digit'})}
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: 600;">¥${expense.amount.toLocaleString()}</div>
+                        <div style="font-size: 12px; color: var(--secondary);">+${expense.expGained} EXP</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getCategoryIcon(category) {
+            switch(category) {
+                case 'growth': return '🎓';
+                case 'entertainment': return '🎉';
+                case 'life': return '🍔';
+                default: return '💰';
+            }
+        }
+
+        // ダークモード
+        function toggleDarkMode() {
+            const body = document.body;
+            const icon = document.getElementById('darkModeIcon');
+            
+            body.classList.toggle('dark');
+            icon.textContent = body.classList.contains('dark') ? '🌞' : '🌙';
+            
+            localStorage.setItem('darkMode', body.classList.contains('dark'));
+        }
+
+        // 名前編集モーダル
+        function openNameEditModal() {
+            document.getElementById('newPlayerName').value = gameData.playerName;
+            document.getElementById('nameError').style.display = 'none';
+            document.getElementById('nameEditModal').classList.add('active');
+            document.getElementById('newPlayerName').focus();
+        }
+
+        function closeNameEditModal() {
+            document.getElementById('nameEditModal').classList.remove('active');
+        }
+
+        // 支出追加モーダル
+        function openExpenseModal() {
+            document.getElementById('expenseAmount').value = '';
+            document.getElementById('expenseMemo').value = '';
+            document.getElementById('expenseError').style.display = 'none';
+            selectedCategory = null;
+            
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.style.background = 'transparent';
+                btn.style.borderColor = 'var(--gray-100)';
+            });
+            
+            document.getElementById('expenseModal').classList.add('active');
+            document.getElementById('expenseAmount').focus();
+        }
+
+        function closeExpenseModal() {
+            document.getElementById('expenseModal').classList.remove('active');
+        }
+
+        // 成功メッセージ表示
+        function showSuccessMessage(message) {
+            const msgEl = document.getElementById('successMessage');
+            msgEl.textContent = message;
+            msgEl.style.display = 'block';
+            
+            setTimeout(() => {
+                msgEl.style.display = 'none';
+            }, 2000);
+        }
+
+        // イベントハンドラー
+        document.getElementById('nameEditForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newName = document.getElementById('newPlayerName').value.trim();
+            const errorEl = document.getElementById('nameError');
+            
+            if (!newName) {
+                errorEl.textContent = '名前を入力してください';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            if (newName.length > 20) {
+                errorEl.textContent = '名前は20文字以内で入力してください';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            gameData.playerName = newName;
+            saveGameData();
+            updateUI();
+            closeNameEditModal();
+            showSuccessMessage('名前を更新しました！');
+        });
+
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                selectedCategory = this.dataset.category;
+                
+                document.querySelectorAll('.category-btn').forEach(b => {
+                    b.style.background = 'transparent';
+                    b.style.borderColor = 'var(--gray-100)';
+                });
+                
+                this.style.background = 'var(--primary)';
+                this.style.borderColor = 'var(--primary)';
+                this.style.color = 'white';
+            });
+        });
+
+        document.getElementById('expenseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const amount = parseInt(document.getElementById('expenseAmount').value);
+            const memo = document.getElementById('expenseMemo').value.trim();
+            const errorEl = document.getElementById('expenseError');
+            
+            if (!amount || amount <= 0) {
+                errorEl.textContent = '有効な金額を入力してください';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            if (!selectedCategory) {
+                errorEl.textContent = 'カテゴリーを選択してください';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            // EXP計算
+            const baseExp = Math.floor(amount / 100);
+            const multiplier = gameData.skills[selectedCategory].multiplier;
+            const expGained = Math.floor(baseExp * multiplier);
+            
+            // 支出記録
+            const expense = {
+                id: Date.now().toString(),
+                amount,
+                category: selectedCategory,
+                memo: memo || '支出',
+                date: new Date().toISOString(),
+                expGained
+            };
+            
+            gameData.expenses.unshift(expense);
+            
+            // EXP追加
+            const oldLevel = gameData.level;
+            gameData.totalExp += expGained;
+            gameData.skills[selectedCategory].exp += expGained;
+            
+            // レベル計算
+            gameData.level = calculateLevel(gameData.totalExp);
+            gameData.skills.growth.level = calculateLevel(gameData.skills.growth.exp);
+            gameData.skills.entertainment.level = calculateLevel(gameData.skills.entertainment.exp);
+            gameData.skills.life.level = calculateLevel(gameData.skills.life.exp);
+            
+            saveGameData();
+            updateUI();
+            closeExpenseModal();
+            
+            showSuccessMessage(`+${expGained} EXP獲得！`);
+            
+            // レベルアップアニメーション
+            if (gameData.level > oldLevel) {
+                document.getElementById('profileCard').classList.add('level-up-animation');
+                setTimeout(() => {
+                    document.getElementById('profileCard').classList.remove('level-up-animation');
+                }, 1500);
+            }
+        });
+
+        // モーダル外クリックで閉じる
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGameData();
+            
+            // ダークモード設定読み込み
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark');
+                document.getElementById('darkModeIcon').textContent = '🌞';
+            }
+            
+            updateUI();
+        });
+    </script>
+</body>
+</html>

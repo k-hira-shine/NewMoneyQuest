@@ -5,9 +5,10 @@ import { calculateExpProgress, calculateExpForLevel } from '../utils/gameLogic';
 interface ProfileCardProps {
   userProfile: UserProfile;
   levelUpAnimation: boolean;
+  onNameEdit?: () => void;
 }
 
-const ProfileCard: React.FC<ProfileCardProps> = ({ userProfile, levelUpAnimation }) => {
+const ProfileCard: React.FC<ProfileCardProps> = ({ userProfile, levelUpAnimation, onNameEdit }) => {
   const { level, totalExp, skills } = userProfile;
   
   // 経験値バーの進捗率を計算
@@ -21,8 +22,19 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ userProfile, levelUpAnimation
           {/* 将来的にはアバター画像を表示 */}
           <span className="text-2xl">👤</span>
         </div>
-        <div>
-          <h2 className="text-xl font-rpg">{userProfile.name}</h2>
+        <div className="flex-1">
+          <div className="flex items-center">
+            <h2 className="text-xl font-rpg mr-2">{userProfile.name}</h2>
+            {onNameEdit && (
+              <button
+                onClick={onNameEdit}
+                className="text-sm text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                title="名前を編集"
+              >
+                ✏️
+              </button>
+            )}
+          </div>
           <div className="flex items-center">
             <span className="font-rpg text-primary mr-2">Lv. {level}</span>
             <span className="text-sm text-gray-600 dark:text-gray-400">

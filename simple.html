@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Quest - Simple Version</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .profile-card {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .name-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .edit-btn {
+            background: #4CAF50;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .edit-btn:hover {
+            background: #45a049;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            min-width: 300px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-submit {
+            background: #007bff;
+            color: white;
+        }
+        .error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .success {
+            color: #28a745;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Money Quest</h1>
+        
+        <div class="profile-card">
+            <div class="name-section">
+                <span style="font-size: 24px;">👤</span>
+                <h2 id="playerName" style="margin: 0 0 0 10px;">プレイヤー</h2>
+                <button class="edit-btn" onclick="openEditModal()">✏️ 編集</button>
+            </div>
+            <p>レベル: 1 | EXP: 0/100</p>
+        </div>
+        
+        <div class="success" id="successMessage" style="display: none;">
+            ✅ 名前編集機能が正常に動作しています！
+        </div>
+        
+        <h3>🎯 名前編集機能テスト</h3>
+        <p>上の「✏️ 編集」ボタンをクリックして名前を変更してみてください。</p>
+    </div>
+
+    <!-- 名前編集モーダル -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3>名前を変更</h3>
+            <form id="nameForm">
+                <div class="form-group">
+                    <label for="newName">新しい名前:</label>
+                    <input type="text" id="newName" maxlength="20" placeholder="新しい名前を入力">
+                    <div id="nameError" class="error" style="display: none;"></div>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="button" class="btn btn-cancel" onclick="closeEditModal()">キャンセル</button>
+                    <button type="submit" class="btn btn-submit">変更する</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 現在の名前を取得
+        function getCurrentName() {
+            return localStorage.getItem('playerName') || 'プレイヤー';
+        }
+
+        // 名前を保存
+        function saveName(name) {
+            localStorage.setItem('playerName', name);
+        }
+
+        // 名前を表示に反映
+        function updateNameDisplay() {
+            document.getElementById('playerName').textContent = getCurrentName();
+        }
+
+        // モーダルを開く
+        function openEditModal() {
+            const modal = document.getElementById('editModal');
+            const nameInput = document.getElementById('newName');
+            const errorDiv = document.getElementById('nameError');
+            
+            nameInput.value = getCurrentName();
+            errorDiv.style.display = 'none';
+            modal.style.display = 'block';
+            nameInput.focus();
+        }
+
+        // モーダルを閉じる
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // 名前を検証
+        function validateName(name) {
+            if (!name.trim()) {
+                return '名前を入力してください';
+            }
+            if (name.trim().length > 20) {
+                return '名前は20文字以内で入力してください';
+            }
+            return null;
+        }
+
+        // フォーム送信処理
+        document.getElementById('nameForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nameInput = document.getElementById('newName');
+            const errorDiv = document.getElementById('nameError');
+            const successDiv = document.getElementById('successMessage');
+            const newName = nameInput.value.trim();
+            
+            // 検証
+            const error = validateName(newName);
+            if (error) {
+                errorDiv.textContent = error;
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // 名前を更新
+            saveName(newName);
+            updateNameDisplay();
+            closeEditModal();
+            
+            // 成功メッセージ表示
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        });
+
+        // モーダル外クリックで閉じる
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
+        });
+
+        // ページ読み込み時に名前を表示
+        document.addEventListener('DOMContentLoaded', function() {
+            updateNameDisplay();
+        });
+    </script>
+</body>
+</html>
