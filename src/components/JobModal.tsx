@@ -9,14 +9,16 @@ interface JobModalProps {
   onJobSelect: (job: Job) => void;
   currentJob?: Job;
   expenses: Expense[];
+  userProfile: any; // UserProfile型を後で更新
 }
 
-export default function JobModal({ isOpen, onClose, onJobSelect, currentJob, expenses }: JobModalProps) {
+export default function JobModal({ isOpen, onClose, onJobSelect, currentJob, expenses, userProfile }: JobModalProps) {
   const [jobRecommendations, setJobRecommendations] = useState<{
     recommendedJob: Job;
     confidence: number;
     reasons: string[];
     alternatives: JobScore[];
+    lockedAlternatives: Array<Job & { missingConditions: string[] }>;
   } | null>(null);
   const [loading, setLoading] = useState(false);
   const [apiKey, setApiKey] = useState('');
@@ -31,7 +33,7 @@ export default function JobModal({ isOpen, onClose, onJobSelect, currentJob, exp
   const analyzeJobs = async () => {
     setLoading(true);
     try {
-      const result = await geminiService.getJobRecommendation(expenses);
+      const result = await geminiService.getJobRecommendation(expenses, userProfile);
       setJobRecommendations(result);
     } catch (error) {
       console.error('職業分析エラー:', error);
@@ -146,6 +148,24 @@ export default function JobModal({ isOpen, onClose, onJobSelect, currentJob, exp
                         reasons={jobScore.reasons}
                         onJobSelect={handleJobSelect}
                         isCurrentJob={currentJob?.id === jobScore.job.id}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {jobRecommendations.lockedAlternatives.length > 0 && (
+                <div>
+                  <h3 className="font-rpg text-lg mb-2">未解放の職業</h3>
+                  <div className="space-y-2">
+                    {jobRecommendations.lockedAlternatives.map((lockedJob, index) => (
+                      <JobCard
+                        key={index}
+                        job={lockedJob}
+                        isLocked={true}
+                        missingConditions={lockedJob.missingConditions}
+                        onJobSelect={handleJobSelect}
+                        isCurrentJob={false}
                       />
                     ))}
                   </div>

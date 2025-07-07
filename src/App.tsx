@@ -6,6 +6,7 @@ import NameEditModal from './components/NameEditModal'
 import JobModal from './components/JobModal'
 import { UserProfile, Expense, MainCategory, getSubCategoryById, Job } from './types'
 import { calculateLevel, saveUserData, loadUserData, PENALTY_MULTIPLIER, applyExpDelta } from './utils/gameLogic'
+import { changeJob, initializeProfile, updateTotalSpent } from './utils/jobLogic'
 
 function App() {
   const [darkMode, setDarkMode] = useState(false)
@@ -22,8 +23,12 @@ function App() {
   useEffect(() => {
     const loadedData = loadUserData()
     if (loadedData) {
-      setUserProfile(loadedData.profile)
+      // プロファイルの初期化（新フィールドの追加）
+      const initializedProfile = initializeProfile(loadedData.profile)
+      const updatedProfile = updateTotalSpent(initializedProfile, loadedData.expenses)
+      setUserProfile(updatedProfile)
       setExpenses(loadedData.expenses)
+      saveUserData(updatedProfile, loadedData.expenses)
     } else {
       // 初期ユーザープロファイルの作成
       const initialProfile: UserProfile = {
@@ -36,8 +41,9 @@ function App() {
           [MainCategory.LIFE]: { level: 1, exp: 0, multiplier: 1 }
         }
       }
-      setUserProfile(initialProfile)
-      saveUserData(initialProfile, [])
+      const initializedProfile = initializeProfile(initialProfile)
+      setUserProfile(initializedProfile)
+      saveUserData(initializedProfile, [])
     }
 
     // ダークモード設定の読み込み
@@ -73,7 +79,25 @@ function App() {
       ? userProfile.job.bonusMultiplier 
       : 1
     
-    const expGained = Math.floor(baseExp * categoryMultiplier * subCategoryMultiplier * jobBonus)
+    // 特殊効果のチェック（例：書籍購入時のEXP+50%）
+    let specialBonus = 1
+    if (userProfile.job?.specialEffects) {
+      const subCategory = getSubCategoryById(subCategoryId)
+      if (subCategory?.name.includes('書籍') && 
+          userProfile.job.specialEffects.some(effect => effect.includes('書籍購入時'))) {
+        specialBonus = 1.5
+      }
+      if (subCategory?.name.includes('技術') && 
+          userProfile.job.specialEffects.some(effect => effect.includes('技術系投資'))) {
+        specialBonus = 1.3
+      }
+      if (subCategory?.name.includes('創作') && 
+          userProfile.job.specialEffects.some(effect => effect.includes('創作活動'))) {
+        specialBonus = 1.4
+      }
+    }
+    
+    const expGained = Math.floor(baseExp * categoryMultiplier * subCategoryMultiplier * jobBonus * specialBonus)
 
     // 新しい支出データ
     const newExpense: Expense = {
@@ -109,8 +133,11 @@ function App() {
     
     // EXP獲得メッセージ表示
     let message = `+${expGained} EXP!`
-    if (jobBonus > 1) {
-      message += ` (職業ボーナス x${jobBonus})`
+    const bonuses = []
+    if (jobBonus > 1) bonuses.push(`職業ボーナス x${jobBonus}`)
+    if (specialBonus > 1) bonuses.push(`特殊効果 x${specialBonus}`)
+    if (bonuses.length > 0) {
+      message += ` (${bonuses.join(', ')})`
     }
     setExpGainMessage(message)
     setTimeout(() => setExpGainMessage(null), 2000)
@@ -194,7 +221,7 @@ function App() {
   const handleJobSelect = (job: Job) => {
     if (!userProfile) return
 
-    const updatedProfile = { ...userProfile, job }
+    const updatedProfile = changeJob(userProfile, job)
     setUserProfile(updatedProfile)
     saveUserData(updatedProfile, expenses)
     setShowJobModal(false)
@@ -288,6 +315,7 @@ function App() {
             onJobSelect={handleJobSelect}
             currentJob={userProfile.job}
             expenses={expenses}
+            userProfile={userProfile}
           />
         )}
       </main>

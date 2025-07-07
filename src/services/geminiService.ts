@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Expense, MainCategory, Job, JobScore, JOBS, getSubCategoryById } from '../types';
+import { getAvailableJobs } from '../utils/jobLogic';
 
 interface ExpenseAnalysis {
   totalAmount: number;
@@ -245,34 +246,47 @@ ${JOBS.map(job => `- ${job.name} (${job.id}): ${job.description}`).join('\n')}
     }
   }
 
-  // 職業の推奨を取得
-  async getJobRecommendation(expenses: Expense[]): Promise<{
+  // 職業の推奨を取得（解放条件を考慮）
+  async getJobRecommendation(
+    expenses: Expense[], 
+    userProfile: any
+  ): Promise<{
     recommendedJob: Job;
     confidence: number;
     reasons: string[];
     alternatives: JobScore[];
+    lockedAlternatives: Array<Job & { missingConditions: string[] }>;
   }> {
-    const jobScores = await this.analyzeJobWithAI(expenses);
+    // 利用可能な職業を取得
+    const { unlockedJobs, lockedJobs } = getAvailableJobs(userProfile, expenses);
     
-    if (jobScores.length === 0) {
+    // 解放済み職業のみで判定
+    const availableJobScores = await this.analyzeJobWithAI(expenses);
+    const unlockedJobScores = availableJobScores.filter(score => 
+      unlockedJobs.some(job => job.id === score.job.id)
+    );
+    
+    if (unlockedJobScores.length === 0) {
       // デフォルトは市民
       const citizenJob = JOBS.find(job => job.id === 'citizen')!;
       return {
         recommendedJob: citizenJob,
         confidence: 50,
         reasons: ['支出データが不足しています'],
-        alternatives: []
+        alternatives: [],
+        lockedAlternatives: lockedJobs.slice(0, 3)
       };
     }
 
-    const best = jobScores[0];
-    const alternatives = jobScores.slice(1, 4);
+    const best = unlockedJobScores[0];
+    const alternatives = unlockedJobScores.slice(1, 4);
 
     return {
       recommendedJob: best.job,
       confidence: best.confidence,
       reasons: best.reasons,
-      alternatives
+      alternatives,
+      lockedAlternatives: lockedJobs.slice(0, 3)
     };
   }
 }
