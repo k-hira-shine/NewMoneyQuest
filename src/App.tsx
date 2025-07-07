@@ -3,7 +3,8 @@ import ExpenseForm from './components/ExpenseForm'
 import ExpenseList from './components/ExpenseList'
 import ProfileCard from './components/ProfileCard'
 import NameEditModal from './components/NameEditModal'
-import { UserProfile, Expense, MainCategory, getSubCategoryById } from './types'
+import JobModal from './components/JobModal'
+import { UserProfile, Expense, MainCategory, getSubCategoryById, Job } from './types'
 import { calculateLevel, saveUserData, loadUserData, PENALTY_MULTIPLIER, applyExpDelta } from './utils/gameLogic'
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
   const [expGainMessage, setExpGainMessage] = useState<string | null>(null)
   const [levelUpAnimation, setLevelUpAnimation] = useState(false)
   const [showNameEditModal, setShowNameEditModal] = useState(false)
+  const [showJobModal, setShowJobModal] = useState(false)
 
   // 初期データのロード
   useEffect(() => {
@@ -60,12 +62,18 @@ function App() {
   const handleAddExpense = (amount: number, category: MainCategory, subCategoryId: string, memo: string) => {
     if (!userProfile) return
 
-    // EXP計算
+    // EXP計算（職業ボーナスを含む）
     const baseExp = Math.floor(amount / 100)
     const categoryMultiplier = userProfile.skills[category].multiplier
     const subCategory = getSubCategoryById(subCategoryId)
     const subCategoryMultiplier = subCategory ? subCategory.multiplier : 1
-    const expGained = Math.floor(baseExp * categoryMultiplier * subCategoryMultiplier)
+    
+    // 職業ボーナスの計算
+    const jobBonus = userProfile.job?.bonusCategories.includes(category) 
+      ? userProfile.job.bonusMultiplier 
+      : 1
+    
+    const expGained = Math.floor(baseExp * categoryMultiplier * subCategoryMultiplier * jobBonus)
 
     // 新しい支出データ
     const newExpense: Expense = {
@@ -100,7 +108,11 @@ function App() {
     saveUserData(updatedProfile, updatedExpenses)
     
     // EXP獲得メッセージ表示
-    setExpGainMessage(`+${expGained} EXP!`)
+    let message = `+${expGained} EXP!`
+    if (jobBonus > 1) {
+      message += ` (職業ボーナス x${jobBonus})`
+    }
+    setExpGainMessage(message)
     setTimeout(() => setExpGainMessage(null), 2000)
 
     // レベルアップアニメーション
@@ -178,6 +190,16 @@ function App() {
     setShowNameEditModal(false)
   }
 
+  // ===================== 職業更新処理 =====================
+  const handleJobSelect = (job: Job) => {
+    if (!userProfile) return
+
+    const updatedProfile = { ...userProfile, job }
+    setUserProfile(updatedProfile)
+    saveUserData(updatedProfile, expenses)
+    setShowJobModal(false)
+  }
+
   // 今日の支出のみフィルタリング
   const todayExpenses = expenses.filter((expense: Expense) => {
     const today = new Date()
@@ -208,6 +230,7 @@ function App() {
           userProfile={userProfile} 
           levelUpAnimation={levelUpAnimation}
           onNameEdit={() => setShowNameEditModal(true)}
+          onJobClick={() => setShowJobModal(true)}
         />
 
         <div className="mt-8">
@@ -255,6 +278,16 @@ function App() {
             currentName={userProfile.name}
             onSubmit={handleUpdateName}
             onCancel={() => setShowNameEditModal(false)}
+          />
+        )}
+
+        {showJobModal && (
+          <JobModal
+            isOpen={showJobModal}
+            onClose={() => setShowJobModal(false)}
+            onJobSelect={handleJobSelect}
+            currentJob={userProfile.job}
+            expenses={expenses}
           />
         )}
       </main>
