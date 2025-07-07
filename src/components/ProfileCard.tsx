@@ -1,6 +1,8 @@
 import React from 'react';
 import { UserProfile } from '../types';
 import { calculateExpProgress, calculateExpForLevel } from '../utils/gameLogic';
+import { generateAvatarConfig } from '../utils/avatarLogic';
+import PixelAvatar from './PixelAvatar';
 
 interface ProfileCardProps {
   userProfile: UserProfile;
@@ -16,12 +18,19 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ userProfile, levelUpAnimation
   const expProgress = calculateExpProgress(totalExp);
   const nextLevelExp = calculateExpForLevel(level + 1);
   
+  // アバター設定を生成
+  const avatarConfig = userProfile.avatar || generateAvatarConfig(userProfile.job, level);
+  
   return (
     <div className={`rpg-card ${levelUpAnimation ? 'level-up-animation' : ''}`}>
       <div className="flex items-center mb-4">
-        <div className="w-16 h-16 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center mr-4">
-          {/* 将来的にはアバター画像を表示 */}
-          <span className="text-2xl">👤</span>
+        <div className="w-16 h-16 flex items-center justify-center mr-4 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+          <PixelAvatar 
+            config={avatarConfig}
+            size={56}
+            animated={true}
+            showLevelUp={levelUpAnimation}
+          />
         </div>
         <div className="flex-1">
           <div className="flex items-center">

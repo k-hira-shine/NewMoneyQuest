@@ -7,6 +7,7 @@ import JobModal from './components/JobModal'
 import { UserProfile, Expense, MainCategory, getSubCategoryById, Job } from './types'
 import { calculateLevel, saveUserData, loadUserData, PENALTY_MULTIPLIER, applyExpDelta } from './utils/gameLogic'
 import { changeJob, initializeProfile, updateTotalSpent } from './utils/jobLogic'
+import { updateAvatarForLevelUp, generateAvatarConfig } from './utils/avatarLogic'
 
 function App() {
   const [darkMode, setDarkMode] = useState(false)
@@ -142,8 +143,13 @@ function App() {
     setExpGainMessage(message)
     setTimeout(() => setExpGainMessage(null), 2000)
 
-    // レベルアップアニメーション
+    // レベルアップ処理
     if (updatedProfile.level > oldLevel) {
+      // アバターの更新
+      const currentAvatar = updatedProfile.avatar || generateAvatarConfig(updatedProfile.job, oldLevel);
+      updatedProfile.avatar = updateAvatarForLevelUp(currentAvatar, updatedProfile.level, updatedProfile.job);
+      
+      // レベルアップアニメーション
       setLevelUpAnimation(true)
       setTimeout(() => setLevelUpAnimation(false), 1500)
     }

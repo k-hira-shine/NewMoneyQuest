@@ -1,4 +1,5 @@
 import { UserProfile, Expense, Job, JOBS, JobRank } from '../types';
+import { updateAvatarForJobChange, generateAvatarConfig } from './avatarLogic';
 
 // 職業の解放条件をチェック
 export const checkJobUnlockConditions = (
@@ -147,6 +148,10 @@ export const changeJob = (
   // 職業の設定
   updatedProfile.job = newJob;
   
+  // アバターの更新
+  const currentAvatar = updatedProfile.avatar || generateAvatarConfig(undefined, updatedProfile.level);
+  updatedProfile.avatar = updateAvatarForJobChange(currentAvatar, newJob, updatedProfile.level);
+  
   return updatedProfile;
 };
 
@@ -169,6 +174,11 @@ export const initializeProfile = (profile: UserProfile): UserProfile => {
   
   if (!updatedProfile.jobHistory) {
     updatedProfile.jobHistory = [];
+  }
+  
+  // アバターの初期化
+  if (!updatedProfile.avatar) {
+    updatedProfile.avatar = generateAvatarConfig(updatedProfile.job, updatedProfile.level);
   }
   
   return updatedProfile;

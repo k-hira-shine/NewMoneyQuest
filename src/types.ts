@@ -45,10 +45,29 @@ export interface SkillData {
   multiplier: number;
 }
 
+// アバター設定
+export interface AvatarConfig {
+  baseColor: string;    // 基本色
+  hairColor: string;    // 髪色
+  eyeColor: string;     // 目の色
+  skinTone: string;     // 肌色
+  accessory?: string;   // アクセサリー
+  weapon?: string;      // 武器・道具
+  aura?: string;        // オーラエフェクト
+}
+
+// レベル段階
+export enum LevelTier {
+  BEGINNER = 'beginner',    // Lv 1-5
+  INTERMEDIATE = 'intermediate', // Lv 6-15
+  ADVANCED = 'advanced',    // Lv 16-25
+  MASTER = 'master'         // Lv 26+
+}
+
 // ユーザープロファイルの型定義
 export interface UserProfile {
   name: string;
-  avatar?: string; // 将来的に使用するためのプレースホルダー
+  avatar?: AvatarConfig; // アバター設定
   level: number;
   totalExp: number;
   skills: {
