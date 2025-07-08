@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyQuest - 完全機能テスト</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 16px;
+            color: white;
+        }
+        
+        .dark-toggle {
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .profile-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .avatar-container {
+            width: 64px;
+            height: 64px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            padding: 4px;
+        }
+        
+        .profile-info h2 {
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .profile-info .level {
+            font-size: 8px;
+            color: #666;
+        }
+        
+        .exp-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        
+        .exp-progress {
+            height: 100%;
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            transition: width 0.3s ease;
+        }
+        
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        
+        .skill-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        
+        .skill-name {
+            font-size: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .skill-name .icon {
+            margin-right: 8px;
+            font-size: 12px;
+        }
+        
+        .skill-level {
+            font-size: 8px;
+            color: #666;
+        }
+        
+        .expense-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .section-header h2 {
+            font-size: 12px;
+            color: #333;
+        }
+        
+        .add-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 8px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+        }
+        
+        .add-button:hover {
+            background: #45a049;
+        }
+        
+        .expense-form {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 8px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 10px;
+            font-family: 'Press Start 2P', cursive;
+        }
+        
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .form-button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 8px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+        }
+        
+        .form-button.primary {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .form-button.secondary {
+            background: #f44336;
+            color: white;
+        }
+        
+        .expense-list {
+            list-style: none;
+        }
+        
+        .expense-item {
+            background: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .expense-info {
+            flex: 1;
+        }
+        
+        .expense-amount {
+            font-size: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .expense-category {
+            font-size: 8px;
+            color: #666;
+        }
+        
+        .expense-exp {
+            font-size: 8px;
+            color: #4CAF50;
+        }
+        
+        .expense-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .expense-action {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 6px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+        }
+        
+        .expense-action.delete {
+            background: #f44336;
+        }
+        
+        .no-expenses {
+            text-align: center;
+            padding: 20px;
+            font-size: 8px;
+            color: #666;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .exp-message {
+            position: fixed;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: #4CAF50;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 10px;
+            z-index: 1000;
+            animation: fadeInOut 2s ease-in-out;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+        
+        .pixel-grid {
+            display: flex;
+            flex-direction: column;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        .pixel-row {
+            display: flex;
+        }
+        
+        .pixel {
+            width: 4px;
+            height: 4px;
+        }
+        
+        .level-up {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffd700;
+            font-size: 8px;
+            animation: bounce 1s infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            50% { transform: translate(-50%, -50%) translateY(-10px); }
+        }
+        
+        .weapon {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            font-size: 12px;
+        }
+        
+        .aura-glow {
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
+        }
+        
+        .aura-sparkle {
+            filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.8));
+        }
+        
+        .aura-radiance {
+            filter: drop-shadow(0 0 16px rgba(251, 191, 36, 1.0));
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Money Quest</h1>
+            <button class="dark-toggle" id="darkToggle">🌙</button>
+        </header>
+        
+        <div id="profileCard"></div>
+        <div id="expenseSection"></div>
+        <div id="expenseForm"></div>
+        <div id="expMessage"></div>
+    </div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // メインカテゴリー
+        const MainCategory = {
+            GROWTH: '成長スキル',
+            ENTERTAINMENT: '娯楽スキル',
+            LIFE: '生活スキル'
+        };
+
+        // サブカテゴリー
+        const SUB_CATEGORIES = [
+            { id: 'books', name: '書籍・学習', icon: '📚', mainCategory: MainCategory.GROWTH, multiplier: 3.5 },
+            { id: 'skill', name: 'スキルアップ', icon: '💻', mainCategory: MainCategory.GROWTH, multiplier: 4.0 },
+            { id: 'tools', name: '仕事道具', icon: '🛠️', mainCategory: MainCategory.GROWTH, multiplier: 3.0 },
+            { id: 'health', name: '健康投資', icon: '🏃', mainCategory: MainCategory.GROWTH, multiplier: 2.5 },
+            { id: 'entertainment', name: 'エンタメ', icon: '🎬', mainCategory: MainCategory.ENTERTAINMENT, multiplier: 1.5 },
+            { id: 'social', name: '交際費', icon: '🍻', mainCategory: MainCategory.ENTERTAINMENT, multiplier: 1.8 },
+            { id: 'leisure', name: 'レジャー', icon: '✈️', mainCategory: MainCategory.ENTERTAINMENT, multiplier: 2.0 },
+            { id: 'hobby', name: '趣味', icon: '🎨', mainCategory: MainCategory.ENTERTAINMENT, multiplier: 1.5 },
+            { id: 'food', name: '食費', icon: '🍱', mainCategory: MainCategory.LIFE, multiplier: 1.0 },
+            { id: 'daily', name: '日用品', icon: '🧼', mainCategory: MainCategory.LIFE, multiplier: 0.8 },
+            { id: 'transport', name: '交通・通信', icon: '🚃', mainCategory: MainCategory.LIFE, multiplier: 1.2 },
+            { id: 'medical', name: '医療・美容', icon: '💊', mainCategory: MainCategory.LIFE, multiplier: 1.5 }
+        ];
+
+        // PixelAvatarコンポーネント
+        function PixelAvatar({ config, size = 64, animated = false, showLevelUp = false }) {
+            const pixelSize = size / 16;
+
+            const createPixelData = () => {
+                const headPixels = [
+                    [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                    [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+                    [0,1,1,2,2,2,2,2,2,2,2,2,2,1,1,0],
+                    [0,1,2,2,3,2,2,2,2,2,2,3,2,2,1,0]
+                ];
+
+                const bodyPixels = [
+                    [0,0,1,2,2,2,2,2,2,2,2,2,2,1,0,0],
+                    [0,1,4,4,4,4,4,4,4,4,4,4,4,4,1,0],
+                    [0,1,4,4,4,4,4,5,5,4,4,4,4,4,1,0],
+                    [0,1,4,4,4,4,5,5,5,5,4,4,4,4,1,0],
+                    [0,1,4,4,4,4,4,5,5,4,4,4,4,4,1,0],
+                    [0,1,4,4,4,4,4,4,4,4,4,4,4,4,1,0],
+                    [0,0,1,4,4,4,4,4,4,4,4,4,4,1,0,0],
+                    [0,0,1,1,4,4,4,4,4,4,4,4,1,1,0,0]
+                ];
+
+                const legPixels = [
+                    [0,0,0,1,1,4,4,4,4,4,4,1,1,0,0,0],
+                    [0,0,0,1,4,4,4,4,4,4,4,4,1,0,0,0],
+                    [0,0,0,1,4,4,4,0,0,4,4,4,1,0,0,0],
+                    [0,0,0,1,1,1,1,0,0,1,1,1,1,0,0,0]
+                ];
+
+                return [...headPixels, ...bodyPixels, ...legPixels];
+            };
+
+            const getColors = () => ({
+                0: 'transparent',
+                1: '#000000',
+                2: config.skinTone || '#FDBCB4',
+                3: config.eyeColor || '#000000',
+                4: config.baseColor || '#3B82F6',
+                5: getAccessoryColor()
+            });
+
+            const getAccessoryColor = () => {
+                switch (config.accessory) {
+                    case 'glasses': return '#333333';
+                    case 'hat': return '#8B4513';
+                    case 'crown': return '#FFD700';
+                    case 'wizard_hat': return '#4B0082';
+                    default: return config.baseColor || '#3B82F6';
+                }
+            };
+
+            const getWeaponEmoji = () => {
+                switch (config.weapon) {
+                    case 'sword': return '⚔️';
+                    case 'book': return '📚';
+                    case 'brush': return '🖌️';
+                    case 'wrench': return '🔧';
+                    case 'coin': return '🪙';
+                    case 'knife': return '🔪';
+                    case 'staff': return '🪄';
+                    case 'hammer': return '🔨';
+                    case 'lyre': return '🎵';
+                    default: return null;
+                }
+            };
+
+            const getAuraClass = () => {
+                switch (config.aura) {
+                    case 'glow': return 'aura-glow';
+                    case 'sparkle': return 'aura-sparkle';
+                    case 'radiance': return 'aura-radiance';
+                    default: return '';
+                }
+            };
+
+            const renderPixelGrid = () => {
+                const pixelData = createPixelData();
+                const colors = getColors();
+                
+                return pixelData.map((row, y) => 
+                    React.createElement('div', {
+                        key: y,
+                        className: 'pixel-row'
+                    }, 
+                    row.map((colorKey, x) => 
+                        React.createElement('div', {
+                            key: `${x}-${y}`,
+                            className: 'pixel',
+                            style: {
+                                width: `${pixelSize}px`,
+                                height: `${pixelSize}px`,
+                                backgroundColor: colors[colorKey],
+                                imageRendering: 'pixelated'
+                            }
+                        })
+                    ))
+                );
+            };
+
+            return React.createElement('div', {
+                style: { position: 'relative', display: 'inline-block' }
+            }, [
+                React.createElement('div', {
+                    key: 'main',
+                    className: `pixel-grid ${getAuraClass()}`,
+                    style: {
+                        width: `${size}px`,
+                        height: `${size}px`,
+                        imageRendering: 'pixelated'
+                    }
+                }, renderPixelGrid()),
+                
+                config.weapon && React.createElement('span', {
+                    key: 'weapon',
+                    className: 'weapon'
+                }, getWeaponEmoji()),
+                
+                showLevelUp && React.createElement('div', {
+                    key: 'levelup',
+                    className: 'level-up'
+                }, '✨ LEVEL UP! ✨')
+            ]);
+        }
+
+        // プロフィールカードコンポーネント
+        function ProfileCard({ userProfile, levelUpAnimation }) {
+            const calculateLevel = (exp) => Math.floor(Math.sqrt(exp / 100)) + 1;
+            const calculateExpForLevel = (level) => (level - 1) * (level - 1) * 100;
+            const calculateExpProgress = (exp) => {
+                const level = calculateLevel(exp);
+                const currentLevelExp = calculateExpForLevel(level);
+                const nextLevelExp = calculateExpForLevel(level + 1);
+                return (exp - currentLevelExp) / (nextLevelExp - currentLevelExp);
+            };
+
+            const expProgress = calculateExpProgress(userProfile.totalExp);
+            const nextLevelExp = calculateExpForLevel(userProfile.level + 1);
+
+            return React.createElement('div', {
+                className: `profile-card ${levelUpAnimation ? 'level-up-animation' : ''}`
+            }, [
+                React.createElement('div', {
+                    key: 'header',
+                    className: 'profile-header'
+                }, [
+                    React.createElement('div', {
+                        key: 'avatar',
+                        className: 'avatar-container'
+                    }, [
+                        React.createElement(PixelAvatar, {
+                            config: userProfile.avatar,
+                            size: 56,
+                            animated: true,
+                            showLevelUp: levelUpAnimation
+                        })
+                    ]),
+                    React.createElement('div', {
+                        key: 'info',
+                        className: 'profile-info'
+                    }, [
+                        React.createElement('h2', { key: 'name' }, userProfile.name),
+                        React.createElement('div', { 
+                            key: 'level',
+                            className: 'level' 
+                        }, `Lv. ${userProfile.level} (${Math.floor(userProfile.totalExp)} / ${nextLevelExp} EXP)`)
+                    ])
+                ]),
+                React.createElement('div', {
+                    key: 'exp-bar',
+                    className: 'exp-bar'
+                }, [
+                    React.createElement('div', {
+                        className: 'exp-progress',
+                        style: { width: `${expProgress * 100}%` }
+                    })
+                ]),
+                React.createElement('div', {
+                    key: 'skills',
+                    className: 'skills-grid'
+                }, Object.entries(userProfile.skills).map(([category, skill]) => 
+                    React.createElement('div', {
+                        key: category,
+                        className: 'skill-row'
+                    }, [
+                        React.createElement('div', {
+                            key: 'name',
+                            className: 'skill-name'
+                        }, [
+                            React.createElement('span', {
+                                key: 'icon',
+                                className: 'icon'
+                            }, category === '成長スキル' ? '🎓' : category === '娯楽スキル' ? '🎉' : '🍔'),
+                            category
+                        ]),
+                        React.createElement('div', {
+                            key: 'level',
+                            className: 'skill-level'
+                        }, `Lv.${skill.level} (x${skill.multiplier})`)
+                    ])
+                ))
+            ]);
+        }
+
+        // 支出フォームコンポーネント
+        function ExpenseForm({ onSubmit, onCancel }) {
+            const [amount, setAmount] = useState('');
+            const [category, setCategory] = useState(MainCategory.GROWTH);
+            const [subCategoryId, setSubCategoryId] = useState('books');
+            const [memo, setMemo] = useState('');
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (!amount || !category || !subCategoryId) return;
+                onSubmit(parseInt(amount), category, subCategoryId, memo);
+            };
+
+            const getSubCategoriesForCategory = (mainCategory) => {
+                return SUB_CATEGORIES.filter(sub => sub.mainCategory === mainCategory);
+            };
+
+            useEffect(() => {
+                const subCategories = getSubCategoriesForCategory(category);
+                if (subCategories.length > 0) {
+                    setSubCategoryId(subCategories[0].id);
+                }
+            }, [category]);
+
+            return React.createElement('div', {
+                className: 'expense-form'
+            }, [
+                React.createElement('form', {
+                    key: 'form',
+                    onSubmit: handleSubmit
+                }, [
+                    React.createElement('div', {
+                        key: 'amount',
+                        className: 'form-group'
+                    }, [
+                        React.createElement('label', { key: 'label' }, '金額'),
+                        React.createElement('input', {
+                            key: 'input',
+                            type: 'number',
+                            value: amount,
+                            onChange: (e) => setAmount(e.target.value),
+                            placeholder: '例: 1000'
+                        })
+                    ]),
+                    React.createElement('div', {
+                        key: 'category',
+                        className: 'form-group'
+                    }, [
+                        React.createElement('label', { key: 'label' }, 'カテゴリー'),
+                        React.createElement('select', {
+                            key: 'select',
+                            value: category,
+                            onChange: (e) => setCategory(e.target.value)
+                        }, Object.values(MainCategory).map(cat => 
+                            React.createElement('option', {
+                                key: cat,
+                                value: cat
+                            }, cat)
+                        ))
+                    ]),
+                    React.createElement('div', {
+                        key: 'subcategory',
+                        className: 'form-group'
+                    }, [
+                        React.createElement('label', { key: 'label' }, '詳細カテゴリー'),
+                        React.createElement('select', {
+                            key: 'select',
+                            value: subCategoryId,
+                            onChange: (e) => setSubCategoryId(e.target.value)
+                        }, getSubCategoriesForCategory(category).map(sub => 
+                            React.createElement('option', {
+                                key: sub.id,
+                                value: sub.id
+                            }, `${sub.icon} ${sub.name}`)
+                        ))
+                    ]),
+                    React.createElement('div', {
+                        key: 'memo',
+                        className: 'form-group'
+                    }, [
+                        React.createElement('label', { key: 'label' }, 'メモ'),
+                        React.createElement('textarea', {
+                            key: 'textarea',
+                            value: memo,
+                            onChange: (e) => setMemo(e.target.value),
+                            placeholder: '例: プログラミング参考書'
+                        })
+                    ]),
+                    React.createElement('div', {
+                        key: 'buttons',
+                        className: 'form-buttons'
+                    }, [
+                        React.createElement('button', {
+                            key: 'submit',
+                            type: 'submit',
+                            className: 'form-button primary'
+                        }, '追加'),
+                        React.createElement('button', {
+                            key: 'cancel',
+                            type: 'button',
+                            className: 'form-button secondary',
+                            onClick: onCancel
+                        }, 'キャンセル')
+                    ])
+                ])
+            ]);
+        }
+
+        // 支出リストコンポーネント
+        function ExpenseList({ expenses, onEdit, onDelete }) {
+            const getSubCategoryById = (id) => {
+                return SUB_CATEGORIES.find(cat => cat.id === id);
+            };
+
+            if (expenses.length === 0) {
+                return React.createElement('div', {
+                    className: 'no-expenses'
+                }, '今日の支出はまだありません');
+            }
+
+            return React.createElement('ul', {
+                className: 'expense-list'
+            }, expenses.map(expense => {
+                const subCategory = getSubCategoryById(expense.subCategoryId);
+                
+                return React.createElement('li', {
+                    key: expense.id,
+                    className: 'expense-item'
+                }, [
+                    React.createElement('div', {
+                        key: 'info',
+                        className: 'expense-info'
+                    }, [
+                        React.createElement('div', {
+                            key: 'amount',
+                            className: 'expense-amount'
+                        }, `¥${expense.amount.toLocaleString()}`),
+                        React.createElement('div', {
+                            key: 'category',
+                            className: 'expense-category'
+                        }, `${subCategory?.icon || ''} ${subCategory?.name || expense.category}`),
+                        React.createElement('div', {
+                            key: 'exp',
+                            className: 'expense-exp'
+                        }, `+${expense.expGained} EXP`),
+                        expense.memo && React.createElement('div', {
+                            key: 'memo',
+                            className: 'expense-memo'
+                        }, expense.memo)
+                    ]),
+                    React.createElement('div', {
+                        key: 'actions',
+                        className: 'expense-actions'
+                    }, [
+                        React.createElement('button', {
+                            key: 'edit',
+                            className: 'expense-action',
+                            onClick: () => onEdit(expense)
+                        }, '編集'),
+                        React.createElement('button', {
+                            key: 'delete',
+                            className: 'expense-action delete',
+                            onClick: () => onDelete(expense)
+                        }, '削除')
+                    ])
+                ]);
+            }));
+        }
+
+        // メインアプリケーション
+        function App() {
+            const [userProfile, setUserProfile] = useState({
+                name: 'プレイヤー',
+                level: 1,
+                totalExp: 0,
+                skills: {
+                    [MainCategory.GROWTH]: { level: 1, exp: 0, multiplier: 3 },
+                    [MainCategory.ENTERTAINMENT]: { level: 1, exp: 0, multiplier: 1.5 },
+                    [MainCategory.LIFE]: { level: 1, exp: 0, multiplier: 1 }
+                },
+                avatar: {
+                    baseColor: '#6B7280',
+                    skinTone: '#FDBCB4',
+                    eyeColor: '#000000'
+                }
+            });
+            const [expenses, setExpenses] = useState([]);
+            const [showExpenseForm, setShowExpenseForm] = useState(false);
+            const [expGainMessage, setExpGainMessage] = useState(null);
+            const [levelUpAnimation, setLevelUpAnimation] = useState(false);
+
+            const calculateLevel = (exp) => Math.floor(Math.sqrt(exp / 100)) + 1;
+
+            const handleAddExpense = (amount, category, subCategoryId, memo) => {
+                const subCategory = SUB_CATEGORIES.find(sub => sub.id === subCategoryId);
+                const baseExp = Math.floor(amount / 100);
+                const categoryMultiplier = userProfile.skills[category].multiplier;
+                const subCategoryMultiplier = subCategory ? subCategory.multiplier : 1;
+                const expGained = Math.floor(baseExp * categoryMultiplier * subCategoryMultiplier);
+
+                const newExpense = {
+                    id: Date.now().toString(),
+                    amount,
+                    category,
+                    subCategoryId,
+                    memo,
+                    date: new Date(),
+                    expGained
+                };
+
+                const updatedProfile = { ...userProfile };
+                updatedProfile.totalExp += expGained;
+                updatedProfile.skills[category].exp += expGained;
+
+                const oldLevel = updatedProfile.level;
+                updatedProfile.level = calculateLevel(updatedProfile.totalExp);
+
+                Object.keys(updatedProfile.skills).forEach(skillKey => {
+                    const skill = updatedProfile.skills[skillKey];
+                    skill.level = calculateLevel(skill.exp);
+                });
+
+                // レベルアップ処理
+                if (updatedProfile.level > oldLevel) {
+                    if (updatedProfile.level > 5) {
+                        updatedProfile.avatar.aura = 'glow';
+                    }
+                    if (updatedProfile.level > 15) {
+                        updatedProfile.avatar.aura = 'sparkle';
+                    }
+                    if (updatedProfile.level > 25) {
+                        updatedProfile.avatar.aura = 'radiance';
+                    }
+                    
+                    setLevelUpAnimation(true);
+                    setTimeout(() => setLevelUpAnimation(false), 1500);
+                }
+
+                setUserProfile(updatedProfile);
+                setExpenses([newExpense, ...expenses]);
+                setExpGainMessage(`+${expGained} EXP!`);
+                setTimeout(() => setExpGainMessage(null), 2000);
+                setShowExpenseForm(false);
+            };
+
+            const handleDeleteExpense = (expense) => {
+                const updatedProfile = { ...userProfile };
+                updatedProfile.totalExp -= expense.expGained;
+                updatedProfile.skills[expense.category].exp -= expense.expGained;
+                updatedProfile.level = calculateLevel(updatedProfile.totalExp);
+
+                Object.keys(updatedProfile.skills).forEach(skillKey => {
+                    const skill = updatedProfile.skills[skillKey];
+                    skill.level = calculateLevel(skill.exp);
+                });
+
+                setUserProfile(updatedProfile);
+                setExpenses(expenses.filter(e => e.id !== expense.id));
+                setExpGainMessage(`-${expense.expGained} EXP`);
+                setTimeout(() => setExpGainMessage(null), 2000);
+            };
+
+            // 今日の支出のみフィルタリング
+            const todayExpenses = expenses.filter(expense => {
+                const today = new Date();
+                const expenseDate = new Date(expense.date);
+                return (
+                    expenseDate.getDate() === today.getDate() &&
+                    expenseDate.getMonth() === today.getMonth() &&
+                    expenseDate.getFullYear() === today.getFullYear()
+                );
+            });
+
+            return [
+                React.createElement(ProfileCard, {
+                    key: 'profile',
+                    userProfile: userProfile,
+                    levelUpAnimation: levelUpAnimation
+                }),
+                React.createElement('div', {
+                    key: 'expense-section',
+                    className: 'expense-section'
+                }, [
+                    React.createElement('div', {
+                        key: 'header',
+                        className: 'section-header'
+                    }, [
+                        React.createElement('h2', { key: 'title' }, '今日の支出'),
+                        React.createElement('button', {
+                            key: 'add',
+                            className: 'add-button',
+                            onClick: () => setShowExpenseForm(true)
+                        }, '追加')
+                    ]),
+                    React.createElement(ExpenseList, {
+                        key: 'list',
+                        expenses: todayExpenses,
+                        onEdit: () => {},
+                        onDelete: handleDeleteExpense
+                    })
+                ]),
+                showExpenseForm && React.createElement(ExpenseForm, {
+                    key: 'form',
+                    onSubmit: handleAddExpense,
+                    onCancel: () => setShowExpenseForm(false)
+                }),
+                expGainMessage && React.createElement('div', {
+                    key: 'message',
+                    className: 'exp-message'
+                }, expGainMessage)
+            ];
+        }
+
+        // アプリケーションをマウント
+        ReactDOM.render(
+            React.createElement(App),
+            document.getElementById('root')
+        );
+
+        // ルートDIVを追加
+        if (!document.getElementById('root')) {
+            const root = document.createElement('div');
+            root.id = 'root';
+            document.body.appendChild(root);
+        }
+    </script>
+</body>
+</html>

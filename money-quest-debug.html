@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyQuest - デバッグ版</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        .profile {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+        .avatar {
+            width: 64px;
+            height: 64px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin-right: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .pixel-avatar {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(16, 1fr);
+            grid-template-rows: repeat(16, 1fr);
+            image-rendering: pixelated;
+        }
+        .pixel {
+            width: 100%;
+            height: 100%;
+        }
+        .profile-info h2 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+        .edit-name-btn {
+            background: none;
+            border: none;
+            color: #007bff;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 10px;
+            padding: 5px 8px;
+            border-radius: 3px;
+            transition: background 0.3s;
+        }
+        .edit-name-btn:hover {
+            background: #f0f0f0;
+        }
+        .profile-info p {
+            margin: 0 0 10px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .exp-bar {
+            width: 250px;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        .exp-progress {
+            height: 100%;
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            transition: width 0.3s ease;
+        }
+        .skills {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        .skill-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        .skill-name {
+            display: flex;
+            align-items: center;
+        }
+        .skill-icon {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        .button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #45a049;
+        }
+        .button.secondary {
+            background: #f44336;
+        }
+        .button.secondary:hover {
+            background: #da190b;
+        }
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        .message.show {
+            transform: translateX(0);
+        }
+        .hidden {
+            display: none;
+        }
+        
+        /* モーダルスタイル */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .modal h3 {
+            margin-top: 0;
+            text-align: center;
+            color: #333;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .debug-info {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MoneyQuest - デバッグ版</h1>
+        
+        <div class="profile">
+            <div class="avatar">
+                <div id="pixelAvatar" class="pixel-avatar"></div>
+            </div>
+            <div class="profile-info">
+                <h2>
+                    <span id="playerName">プレイヤー</span>
+                    <button class="edit-name-btn" onclick="showNameEditModal()">✏️</button>
+                </h2>
+                <p id="playerLevel">Lv. 1 (0 / 100 EXP)</p>
+                <div class="exp-bar">
+                    <div id="expProgress" class="exp-progress" style="width: 0%"></div>
+                </div>
+                <div class="skills">
+                    <div class="skill-row">
+                        <div class="skill-name">
+                            <span class="skill-icon">🎓</span>
+                            成長スキル
+                        </div>
+                        <span id="growthSkill">Lv.1 (x3.0)</span>
+                    </div>
+                    <div class="skill-row">
+                        <div class="skill-name">
+                            <span class="skill-icon">🎉</span>
+                            娯楽スキル
+                        </div>
+                        <span id="entertainmentSkill">Lv.1 (x1.5)</span>
+                    </div>
+                    <div class="skill-row">
+                        <div class="skill-name">
+                            <span class="skill-icon">🍔</span>
+                            生活スキル
+                        </div>
+                        <span id="lifeSkill">Lv.1 (x1.0)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="debug-info">
+            <h4>デバッグ情報</h4>
+            <button class="button" onclick="testAlert()">アラートテスト</button>
+            <button class="button" onclick="testModal()">モーダルテスト</button>
+            <div id="debugLog"></div>
+        </div>
+        
+        <div id="message" class="message"></div>
+    </div>
+
+    <!-- 名前編集モーダル -->
+    <div id="nameEditModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>名前を変更</h3>
+            <div class="form-group">
+                <label>新しい名前</label>
+                <input type="text" id="newNameInput" placeholder="新しい名前を入力" maxlength="20">
+            </div>
+            <div class="modal-buttons">
+                <button class="button" onclick="updatePlayerName()">変更</button>
+                <button class="button secondary" onclick="hideNameEditModal()">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ゲームデータ
+        let gameData = {
+            player: {
+                name: 'プレイヤー',
+                level: 1,
+                totalExp: 0,
+                skills: {
+                    '成長スキル': { level: 1, exp: 0, multiplier: 3.0 },
+                    '娯楽スキル': { level: 1, exp: 0, multiplier: 1.5 },
+                    '生活スキル': { level: 1, exp: 0, multiplier: 1.0 }
+                },
+                avatar: {
+                    baseColor: '#6B7280',
+                    skinTone: '#FDBCB4',
+                    eyeColor: '#000000',
+                    aura: 'none'
+                }
+            },
+            expenses: []
+        };
+
+        // デバッグ関数
+        function testAlert() {
+            alert('アラートが動作しています！');
+            debugLog('アラートテスト実行');
+        }
+
+        function testModal() {
+            showNameEditModal();
+            debugLog('モーダルテスト実行');
+        }
+
+        function debugLog(message) {
+            const debugDiv = document.getElementById('debugLog');
+            const time = new Date().toLocaleTimeString();
+            debugDiv.innerHTML += `<p>[${time}] ${message}</p>`;
+        }
+
+        // LocalStorageからデータを読み込む
+        function loadGameData() {
+            try {
+                const savedData = localStorage.getItem('moneyQuestData');
+                if (savedData) {
+                    const parsed = JSON.parse(savedData);
+                    gameData = parsed;
+                    debugLog('データを読み込みました');
+                }
+            } catch (error) {
+                debugLog('データ読み込みエラー: ' + error.message);
+            }
+        }
+
+        // LocalStorageにデータを保存する
+        function saveGameData() {
+            try {
+                localStorage.setItem('moneyQuestData', JSON.stringify(gameData));
+                debugLog('データを保存しました');
+            } catch (error) {
+                debugLog('データ保存エラー: ' + error.message);
+            }
+        }
+
+        // 名前編集モーダル表示
+        function showNameEditModal() {
+            debugLog('showNameEditModal() 実行');
+            const modal = document.getElementById('nameEditModal');
+            const input = document.getElementById('newNameInput');
+            
+            if (modal && input) {
+                input.value = gameData.player.name;
+                modal.classList.remove('hidden');
+                debugLog('モーダルを表示しました');
+            } else {
+                debugLog('モーダル要素が見つかりません');
+            }
+        }
+
+        // 名前編集モーダル非表示
+        function hideNameEditModal() {
+            debugLog('hideNameEditModal() 実行');
+            const modal = document.getElementById('nameEditModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                debugLog('モーダルを非表示にしました');
+            }
+        }
+
+        // プレイヤー名前更新
+        function updatePlayerName() {
+            debugLog('updatePlayerName() 実行');
+            const newName = document.getElementById('newNameInput').value.trim();
+            if (newName && newName.length > 0) {
+                gameData.player.name = newName;
+                updateUI();
+                saveGameData();
+                hideNameEditModal();
+                showMessage('名前を変更しました！');
+                debugLog('名前を「' + newName + '」に変更しました');
+            } else {
+                alert('有効な名前を入力してください');
+                debugLog('無効な名前が入力されました');
+            }
+        }
+
+        // ピクセルアバターの描画
+        function drawPixelAvatar() {
+            const avatar = gameData.player.avatar;
+            const avatarElement = document.getElementById('pixelAvatar');
+            
+            if (!avatarElement) {
+                debugLog('アバター要素が見つかりません');
+                return;
+            }
+            
+            const pixelData = [
+                [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+                [0,1,1,2,2,2,2,2,2,2,2,2,2,1,1,0],
+                [0,1,2,2,3,3,2,2,2,2,3,3,2,2,1,0],
+                [0,1,2,2,2,2,2,2,2,2,2,2,2,2,1,0],
+                [0,1,4,4,4,4,4,4,4,4,4,4,4,4,1,0],
+                [0,1,4,4,4,4,4,5,5,4,4,4,4,4,1,0],
+                [0,1,4,4,4,5,5,5,5,5,4,4,4,4,1,0],
+                [0,1,4,4,4,4,5,5,5,4,4,4,4,4,1,0],
+                [0,1,4,4,4,4,4,4,4,4,4,4,4,4,1,0],
+                [0,0,1,4,4,4,4,4,4,4,4,4,4,1,0,0],
+                [0,0,1,1,4,4,4,4,4,4,4,4,1,1,0,0],
+                [0,0,0,1,1,4,4,4,4,4,4,1,1,0,0,0],
+                [0,0,0,1,4,4,4,4,4,4,4,4,1,0,0,0],
+                [0,0,0,1,4,4,4,0,0,4,4,4,1,0,0,0],
+                [0,0,0,1,1,1,1,0,0,1,1,1,1,0,0,0]
+            ];
+
+            const colors = {
+                0: 'transparent',
+                1: '#000000',
+                2: avatar.skinTone,
+                3: avatar.eyeColor,
+                4: avatar.baseColor,
+                5: avatar.baseColor
+            };
+
+            avatarElement.innerHTML = '';
+            pixelData.forEach(row => {
+                row.forEach(colorKey => {
+                    const pixel = document.createElement('div');
+                    pixel.className = 'pixel';
+                    pixel.style.backgroundColor = colors[colorKey];
+                    avatarElement.appendChild(pixel);
+                });
+            });
+        }
+
+        // UIの更新
+        function updateUI() {
+            const player = gameData.player;
+            const playerNameElement = document.getElementById('playerName');
+            const playerLevelElement = document.getElementById('playerLevel');
+            
+            if (playerNameElement) {
+                playerNameElement.textContent = player.name;
+            }
+            
+            if (playerLevelElement) {
+                playerLevelElement.textContent = `Lv. ${player.level} (${Math.floor(player.totalExp)} / 100 EXP)`;
+            }
+
+            drawPixelAvatar();
+            debugLog('UIを更新しました');
+        }
+
+        // メッセージ表示
+        function showMessage(text) {
+            const messageDiv = document.getElementById('message');
+            if (messageDiv) {
+                messageDiv.textContent = text;
+                messageDiv.classList.add('show');
+                
+                setTimeout(() => {
+                    messageDiv.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // モーダル外クリックで閉じる
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('nameEditModal');
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        hideNameEditModal();
+                    }
+                });
+            }
+
+            // Enterキーで名前変更
+            const input = document.getElementById('newNameInput');
+            if (input) {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        updatePlayerName();
+                    }
+                });
+            }
+
+            // 初期化
+            loadGameData();
+            updateUI();
+            debugLog('アプリケーションを初期化しました');
+        });
+    </script>
+</body>
+</html>

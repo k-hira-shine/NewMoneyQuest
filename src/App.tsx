@@ -40,7 +40,8 @@ function App() {
           [MainCategory.GROWTH]: { level: 1, exp: 0, multiplier: 3 },
           [MainCategory.ENTERTAINMENT]: { level: 1, exp: 0, multiplier: 1.5 },
           [MainCategory.LIFE]: { level: 1, exp: 0, multiplier: 1 }
-        }
+        },
+        avatar: generateAvatarConfig(undefined, 1)
       }
       const initializedProfile = initializeProfile(initialProfile)
       setUserProfile(initializedProfile)

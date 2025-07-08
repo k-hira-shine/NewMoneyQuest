@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyQuest - 動作テスト</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .profile {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .avatar {
+            width: 60px;
+            height: 60px;
+            background: #e0e0e0;
+            border-radius: 8px;
+            margin-right: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        .pixel-grid {
+            display: flex;
+            flex-direction: column;
+        }
+        .pixel-row {
+            display: flex;
+        }
+        .pixel {
+            width: 4px;
+            height: 4px;
+        }
+        .profile-info h2 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .profile-info p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .exp-bar {
+            width: 200px;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .exp-progress {
+            height: 100%;
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            transition: width 0.3s ease;
+        }
+        .form-section {
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        .button:hover {
+            background: #45a049;
+        }
+        .button.secondary {
+            background: #f44336;
+        }
+        .button.secondary:hover {
+            background: #da190b;
+        }
+        .expense-list {
+            margin-top: 20px;
+        }
+        .expense-item {
+            background: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .expense-info {
+            flex: 1;
+        }
+        .expense-amount {
+            font-weight: bold;
+            color: #333;
+        }
+        .expense-category {
+            color: #666;
+            font-size: 12px;
+        }
+        .expense-exp {
+            color: #4CAF50;
+            font-size: 12px;
+        }
+        .expense-actions button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        .expense-actions button.delete {
+            background: #f44336;
+        }
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            z-index: 1000;
+        }
+        .hidden {
+            display: none;
+        }
+        .skills {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .skill-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // 簡単なPixelAvatarコンポーネント
+        function PixelAvatar({ config, size = 60 }) {
+            const pixelSize = size / 15;
+            
+            const pixelData = [
+                [0,0,0,1,1,1,1,1,1,1,1,1,0,0,0],
+                [0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
+                [0,1,1,2,2,2,2,2,2,2,2,2,1,1,0],
+                [0,1,2,2,3,2,2,2,2,2,3,2,2,1,0],
+                [0,1,2,2,2,2,2,2,2,2,2,2,2,1,0],
+                [0,1,4,4,4,4,4,4,4,4,4,4,4,1,0],
+                [0,1,4,4,4,4,4,5,5,4,4,4,4,1,0],
+                [0,1,4,4,4,5,5,5,5,5,4,4,4,1,0],
+                [0,1,4,4,4,4,5,5,5,4,4,4,4,1,0],
+                [0,1,4,4,4,4,4,4,4,4,4,4,4,1,0],
+                [0,0,1,4,4,4,4,4,4,4,4,4,1,0,0],
+                [0,0,1,1,4,4,4,4,4,4,4,1,1,0,0],
+                [0,0,0,1,1,4,4,4,4,4,1,1,0,0,0],
+                [0,0,0,1,4,4,4,4,4,4,4,1,0,0,0],
+                [0,0,0,1,1,1,1,0,1,1,1,1,0,0,0]
+            ];
+
+            const colors = {
+                0: 'transparent',
+                1: '#000000',
+                2: config.skinTone || '#FDBCB4',
+                3: config.eyeColor || '#000000',
+                4: config.baseColor || '#3B82F6',
+                5: config.baseColor || '#3B82F6'
+            };
+
+            return (
+                <div className="pixel-grid">
+                    {pixelData.map((row, y) => (
+                        <div key={y} className="pixel-row">
+                            {row.map((colorKey, x) => (
+                                <div
+                                    key={`${x}-${y}`}
+                                    className="pixel"
+                                    style={{
+                                        width: `${pixelSize}px`,
+                                        height: `${pixelSize}px`,
+                                        backgroundColor: colors[colorKey]
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // メインアプリケーション
+        function App() {
+            const [userProfile, setUserProfile] = useState({
+                name: 'プレイヤー',
+                level: 1,
+                totalExp: 0,
+                skills: {
+                    '成長スキル': { level: 1, exp: 0, multiplier: 3 },
+                    '娯楽スキル': { level: 1, exp: 0, multiplier: 1.5 },
+                    '生活スキル': { level: 1, exp: 0, multiplier: 1 }
+                },
+                avatar: {
+                    baseColor: '#6B7280',
+                    skinTone: '#FDBCB4',
+                    eyeColor: '#000000'
+                }
+            });
+
+            const [expenses, setExpenses] = useState([]);
+            const [showForm, setShowForm] = useState(false);
+            const [formData, setFormData] = useState({
+                amount: '',
+                category: '成長スキル',
+                memo: ''
+            });
+            const [message, setMessage] = useState('');
+
+            const calculateLevel = (exp) => Math.floor(Math.sqrt(exp / 100)) + 1;
+            const calculateExpForLevel = (level) => (level - 1) * (level - 1) * 100;
+            const calculateExpProgress = (exp) => {
+                const level = calculateLevel(exp);
+                const currentLevelExp = calculateExpForLevel(level);
+                const nextLevelExp = calculateExpForLevel(level + 1);
+                return (exp - currentLevelExp) / (nextLevelExp - currentLevelExp);
+            };
+
+            const handleAddExpense = (e) => {
+                e.preventDefault();
+                if (!formData.amount || !formData.category) return;
+
+                const amount = parseInt(formData.amount);
+                const baseExp = Math.floor(amount / 100);
+                const categoryMultiplier = userProfile.skills[formData.category].multiplier;
+                const expGained = Math.floor(baseExp * categoryMultiplier);
+
+                const newExpense = {
+                    id: Date.now(),
+                    amount,
+                    category: formData.category,
+                    memo: formData.memo,
+                    date: new Date(),
+                    expGained
+                };
+
+                const updatedProfile = { ...userProfile };
+                updatedProfile.totalExp += expGained;
+                updatedProfile.skills[formData.category].exp += expGained;
+
+                const oldLevel = updatedProfile.level;
+                updatedProfile.level = calculateLevel(updatedProfile.totalExp);
+
+                // スキルレベル更新
+                Object.keys(updatedProfile.skills).forEach(skillKey => {
+                    const skill = updatedProfile.skills[skillKey];
+                    skill.level = calculateLevel(skill.exp);
+                });
+
+                // レベルアップ時の色変更
+                if (updatedProfile.level > oldLevel) {
+                    if (updatedProfile.level > 5) {
+                        updatedProfile.avatar.baseColor = '#10B981';
+                    }
+                    if (updatedProfile.level > 10) {
+                        updatedProfile.avatar.baseColor = '#8B5CF6';
+                    }
+                    if (updatedProfile.level > 15) {
+                        updatedProfile.avatar.baseColor = '#F59E0B';
+                    }
+                }
+
+                setUserProfile(updatedProfile);
+                setExpenses([newExpense, ...expenses]);
+                setFormData({ amount: '', category: '成長スキル', memo: '' });
+                setShowForm(false);
+                setMessage(`+${expGained} EXP獲得！`);
+                setTimeout(() => setMessage(''), 3000);
+            };
+
+            const handleDeleteExpense = (expense) => {
+                const updatedProfile = { ...userProfile };
+                updatedProfile.totalExp -= expense.expGained;
+                updatedProfile.skills[expense.category].exp -= expense.expGained;
+                updatedProfile.level = calculateLevel(updatedProfile.totalExp);
+
+                Object.keys(updatedProfile.skills).forEach(skillKey => {
+                    const skill = updatedProfile.skills[skillKey];
+                    skill.level = calculateLevel(skill.exp);
+                });
+
+                setUserProfile(updatedProfile);
+                setExpenses(expenses.filter(e => e.id !== expense.id));
+                setMessage(`-${expense.expGained} EXP`);
+                setTimeout(() => setMessage(''), 3000);
+            };
+
+            const expProgress = calculateExpProgress(userProfile.totalExp);
+            const nextLevelExp = calculateExpForLevel(userProfile.level + 1);
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>MoneyQuest</h1>
+                    </div>
+
+                    <div className="profile">
+                        <div className="avatar">
+                            <PixelAvatar config={userProfile.avatar} size={60} />
+                        </div>
+                        <div className="profile-info">
+                            <h2>{userProfile.name}</h2>
+                            <p>Lv. {userProfile.level} ({Math.floor(userProfile.totalExp)} / {nextLevelExp} EXP)</p>
+                            <div className="exp-bar">
+                                <div className="exp-progress" style={{ width: `${expProgress * 100}%` }}></div>
+                            </div>
+                            <div className="skills">
+                                {Object.entries(userProfile.skills).map(([category, skill]) => (
+                                    <div key={category} className="skill-row">
+                                        <span>{category}</span>
+                                        <span>Lv.{skill.level} (x{skill.multiplier})</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="form-section">
+                        <button className="button" onClick={() => setShowForm(!showForm)}>
+                            {showForm ? 'キャンセル' : '支出を追加'}
+                        </button>
+
+                        {showForm && (
+                            <form onSubmit={handleAddExpense} style={{ marginTop: '15px' }}>
+                                <div className="form-group">
+                                    <label>金額</label>
+                                    <input
+                                        type="number"
+                                        value={formData.amount}
+                                        onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                                        placeholder="例: 1000"
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>カテゴリー</label>
+                                    <select
+                                        value={formData.category}
+                                        onChange={(e) => setFormData({...formData, category: e.target.value})}
+                                    >
+                                        <option value="成長スキル">成長スキル</option>
+                                        <option value="娯楽スキル">娯楽スキル</option>
+                                        <option value="生活スキル">生活スキル</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>メモ</label>
+                                    <textarea
+                                        value={formData.memo}
+                                        onChange={(e) => setFormData({...formData, memo: e.target.value})}
+                                        placeholder="例: プログラミング参考書"
+                                    />
+                                </div>
+                                <button type="submit" className="button">追加</button>
+                                <button type="button" className="button secondary" onClick={() => setShowForm(false)}>キャンセル</button>
+                            </form>
+                        )}
+                    </div>
+
+                    <div className="expense-list">
+                        <h3>今日の支出</h3>
+                        {expenses.length === 0 ? (
+                            <p>今日の支出はまだありません</p>
+                        ) : (
+                            expenses.map(expense => (
+                                <div key={expense.id} className="expense-item">
+                                    <div className="expense-info">
+                                        <div className="expense-amount">¥{expense.amount.toLocaleString()}</div>
+                                        <div className="expense-category">{expense.category}</div>
+                                        <div className="expense-exp">+{expense.expGained} EXP</div>
+                                        {expense.memo && <div>{expense.memo}</div>}
+                                    </div>
+                                    <div className="expense-actions">
+                                        <button className="delete" onClick={() => handleDeleteExpense(expense)}>削除</button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    {message && (
+                        <div className="message">
+                            {message}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // アプリケーションをマウント
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

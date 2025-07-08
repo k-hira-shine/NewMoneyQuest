@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelAvatar テスト</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 500px;
+        }
+        .avatar-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        .pixel-grid {
+            display: flex;
+            flex-direction: column;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        .pixel-row {
+            display: flex;
+        }
+        .pixel {
+            width: 4px;
+            height: 4px;
+        }
+        .level-up {
+            color: #ffd700;
+            font-size: 12px;
+            margin-top: 10px;
+            animation: bounce 1s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .weapon {
+            font-size: 20px;
+            margin-left: 10px;
+        }
+        .aura {
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: #333; font-size: 16px; margin-bottom: 20px;">PixelAvatar 表示テスト</h1>
+        
+        <div class="avatar-container">
+            <div id="avatar1"></div>
+            <p style="font-size: 10px; margin-top: 10px;">基本アバター</p>
+        </div>
+        
+        <div class="avatar-container">
+            <div id="avatar2"></div>
+            <p style="font-size: 10px; margin-top: 10px;">オーラ付きアバター</p>
+        </div>
+        
+        <div class="avatar-container">
+            <div id="avatar3"></div>
+            <p style="font-size: 10px; margin-top: 10px;">武器付きアバター</p>
+        </div>
+    </div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // PixelAvatarコンポーネント
+        function PixelAvatar({ config, size = 64, animated = false, showLevelUp = false }) {
+            const pixelSize = size / 16;
+
+            // ピクセルデータを作成
+            const createPixelData = () => {
+                const headPixels = [
+                    [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                    [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+                    [0,1,1,2,2,2,2,2,2,2,2,2,2,1,1,0],
+                    [0,1,2,2,3,2,2,2,2,2,2,3,2,2,1,0]
+                ];
+
+                const bodyPixels = [
+                    [0,0,1,2,2,2,2,2,2,2,2,2,2,1,0,0],
+                    [0,1,4,4,4,4,4,4,4,4,4,4,4,4,1,0],
+                    [0,1,4,4,4,4,4,5,5,4,4,4,4,4,1,0],
+                    [0,1,4,4,4,4,5,5,5,5,4,4,4,4,1,0],
+                    [0,1,4,4,4,4,4,5,5,4,4,4,4,4,1,0],
+                    [0,1,4,4,4,4,4,4,4,4,4,4,4,4,1,0],
+                    [0,0,1,4,4,4,4,4,4,4,4,4,4,1,0,0],
+                    [0,0,1,1,4,4,4,4,4,4,4,4,1,1,0,0]
+                ];
+
+                const legPixels = [
+                    [0,0,0,1,1,4,4,4,4,4,4,1,1,0,0,0],
+                    [0,0,0,1,4,4,4,4,4,4,4,4,1,0,0,0],
+                    [0,0,0,1,4,4,4,0,0,4,4,4,1,0,0,0],
+                    [0,0,0,1,1,1,1,0,0,1,1,1,1,0,0,0]
+                ];
+
+                return [...headPixels, ...bodyPixels, ...legPixels];
+            };
+
+            // 色の定義
+            const getColors = () => ({
+                0: 'transparent',
+                1: '#000000',
+                2: config.skinTone || '#FDBCB4',
+                3: config.eyeColor || '#000000',
+                4: config.baseColor || '#3B82F6',
+                5: getAccessoryColor()
+            });
+
+            // アクセサリーの色
+            const getAccessoryColor = () => {
+                switch (config.accessory) {
+                    case 'glasses': return '#333333';
+                    case 'hat': return '#8B4513';
+                    case 'crown': return '#FFD700';
+                    default: return config.baseColor || '#3B82F6';
+                }
+            };
+
+            // 武器の絵文字
+            const getWeaponEmoji = () => {
+                switch (config.weapon) {
+                    case 'sword': return '⚔️';
+                    case 'book': return '📚';
+                    case 'brush': return '🖌️';
+                    case 'wrench': return '🔧';
+                    case 'coin': return '🪙';
+                    default: return null;
+                }
+            };
+
+            // ピクセルグリッドをレンダリング
+            const renderPixelGrid = () => {
+                const pixelData = createPixelData();
+                const colors = getColors();
+                
+                return pixelData.map((row, y) => 
+                    React.createElement('div', {
+                        key: y,
+                        className: 'pixel-row'
+                    }, 
+                    row.map((colorKey, x) => 
+                        React.createElement('div', {
+                            key: `${x}-${y}`,
+                            className: 'pixel',
+                            style: {
+                                width: `${pixelSize}px`,
+                                height: `${pixelSize}px`,
+                                backgroundColor: colors[colorKey],
+                                imageRendering: 'pixelated'
+                            }
+                        })
+                    ))
+                );
+            };
+
+            return React.createElement('div', {
+                style: { position: 'relative', display: 'inline-block' }
+            }, [
+                // メインキャラクター
+                React.createElement('div', {
+                    key: 'main',
+                    className: `pixel-grid ${config.aura ? 'aura' : ''}`,
+                    style: {
+                        width: `${size}px`,
+                        height: `${size}px`,
+                        imageRendering: 'pixelated'
+                    }
+                }, renderPixelGrid()),
+                
+                // 武器
+                config.weapon && React.createElement('span', {
+                    key: 'weapon',
+                    className: 'weapon',
+                    style: {
+                        position: 'absolute',
+                        bottom: '-5px',
+                        right: '-5px'
+                    }
+                }, getWeaponEmoji()),
+                
+                // レベルアップ
+                showLevelUp && React.createElement('div', {
+                    key: 'levelup',
+                    className: 'level-up'
+                }, '✨ LEVEL UP! ✨')
+            ]);
+        }
+
+        // テスト用のアバター設定
+        const avatarConfigs = [
+            {
+                skinTone: '#FDBCB4',
+                eyeColor: '#000000',
+                baseColor: '#3B82F6',
+                accessory: 'none'
+            },
+            {
+                skinTone: '#D4A574',
+                eyeColor: '#8B4513',
+                baseColor: '#10B981',
+                accessory: 'crown',
+                aura: true
+            },
+            {
+                skinTone: '#F4C2A1',
+                eyeColor: '#2563EB',
+                baseColor: '#7C3AED',
+                accessory: 'glasses',
+                weapon: 'sword'
+            }
+        ];
+
+        // アバターを描画
+        ReactDOM.render(
+            React.createElement(PixelAvatar, {
+                config: avatarConfigs[0],
+                size: 64,
+                animated: false
+            }),
+            document.getElementById('avatar1')
+        );
+
+        ReactDOM.render(
+            React.createElement(PixelAvatar, {
+                config: avatarConfigs[1],
+                size: 64,
+                animated: true
+            }),
+            document.getElementById('avatar2')
+        );
+
+        ReactDOM.render(
+            React.createElement(PixelAvatar, {
+                config: avatarConfigs[2],
+                size: 64,
+                animated: false,
+                showLevelUp: true
+            }),
+            document.getElementById('avatar3')
+        );
+    </script>
+</body>
+</html>

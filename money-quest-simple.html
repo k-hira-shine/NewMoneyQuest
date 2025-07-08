@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyQuest - シンプル版</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .profile {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .avatar {
+            width: 64px;
+            height: 64px;
+            background: #e0e0e0;
+            border-radius: 8px;
+            margin-right: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .pixel-avatar {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(16, 1fr);
+            grid-template-rows: repeat(16, 1fr);
+        }
+        .pixel {
+            width: 100%;
+            height: 100%;
+        }
+        .profile-info h2 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .profile-info p {
+            margin: 0 0 10px 0;
+            color: #666;
+        }
+        .exp-bar {
+            width: 200px;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .exp-progress {
+            height: 100%;
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            transition: width 0.3s ease;
+        }
+        .skills {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .skill-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+        .form-section {
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #45a049;
+        }
+        .button.secondary {
+            background: #f44336;
+        }
+        .button.secondary:hover {
+            background: #da190b;
+        }
+        .expense-list {
+            margin-top: 20px;
+        }
+        .expense-item {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .expense-info {
+            flex: 1;
+        }
+        .expense-amount {
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+        }
+        .expense-category {
+            color: #666;
+            font-size: 14px;
+        }
+        .expense-exp {
+            color: #4CAF50;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .expense-actions button {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .expense-actions button:hover {
+            background: #da190b;
+        }
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        .message.show {
+            transform: translateX(0);
+        }
+        .hidden {
+            display: none;
+        }
+        .no-expenses {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MoneyQuest</h1>
+        
+        <div class="profile">
+            <div class="avatar">
+                <div id="pixelAvatar" class="pixel-avatar"></div>
+            </div>
+            <div class="profile-info">
+                <h2 id="playerName">プレイヤー</h2>
+                <p id="playerLevel">Lv. 1 (0 / 100 EXP)</p>
+                <div class="exp-bar">
+                    <div id="expProgress" class="exp-progress" style="width: 0%"></div>
+                </div>
+                <div class="skills">
+                    <div class="skill-row">
+                        <span>🎓 成長スキル</span>
+                        <span id="growthSkill">Lv.1 (x3.0)</span>
+                    </div>
+                    <div class="skill-row">
+                        <span>🎉 娯楽スキル</span>
+                        <span id="entertainmentSkill">Lv.1 (x1.5)</span>
+                    </div>
+                    <div class="skill-row">
+                        <span>🍔 生活スキル</span>
+                        <span id="lifeSkill">Lv.1 (x1.0)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <button id="toggleFormBtn" class="button">支出を追加</button>
+            
+            <div id="expenseForm" class="hidden" style="margin-top: 20px;">
+                <div class="form-group">
+                    <label>金額</label>
+                    <input type="number" id="amountInput" placeholder="例: 1000" min="1">
+                </div>
+                <div class="form-group">
+                    <label>カテゴリー</label>
+                    <select id="categorySelect">
+                        <option value="成長スキル">成長スキル</option>
+                        <option value="娯楽スキル">娯楽スキル</option>
+                        <option value="生活スキル">生活スキル</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>メモ</label>
+                    <input type="text" id="memoInput" placeholder="例: プログラミング参考書">
+                </div>
+                <button id="addExpenseBtn" class="button">追加</button>
+                <button id="cancelBtn" class="button secondary">キャンセル</button>
+            </div>
+        </div>
+        
+        <div class="expense-list">
+            <h3>今日の支出</h3>
+            <div id="expensesList">
+                <div class="no-expenses">今日の支出はまだありません</div>
+            </div>
+        </div>
+        
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        // ゲームデータ
+        let gameData = {
+            player: {
+                name: 'プレイヤー',
+                level: 1,
+                totalExp: 0,
+                skills: {
+                    '成長スキル': { level: 1, exp: 0, multiplier: 3.0 },
+                    '娯楽スキル': { level: 1, exp: 0, multiplier: 1.5 },
+                    '生活スキル': { level: 1, exp: 0, multiplier: 1.0 }
+                },
+                avatar: {
+                    baseColor: '#6B7280',
+                    skinTone: '#FDBCB4',
+                    eyeColor: '#000000'
+                }
+            },
+            expenses: []
+        };
+
+        // レベル計算
+        function calculateLevel(exp) {
+            return Math.floor(Math.sqrt(exp / 100)) + 1;
+        }
+
+        function calculateExpForLevel(level) {
+            return (level - 1) * (level - 1) * 100;
+        }
+
+        function calculateExpProgress(exp) {
+            const level = calculateLevel(exp);
+            const currentLevelExp = calculateExpForLevel(level);
+            const nextLevelExp = calculateExpForLevel(level + 1);
+            return (exp - currentLevelExp) / (nextLevelExp - currentLevelExp);
+        }
+
+        // ピクセルアバターの描画
+        function drawPixelAvatar() {
+            const avatar = gameData.player.avatar;
+            const avatarElement = document.getElementById('pixelAvatar');
+            
+            // 16x16のピクセルデータ
+            const pixelData = [
+                [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+                [0,1,1,2,2,2,2,2,2,2,2,2,2,1,1,0],
+                [0,1,2,2,3,3,2,2,2,2,3,3,2,2,1,0],
+                [0,1,2,2,2,2,2,2,2,2,2,2,2,2,1,0],
+                [0,1,4,4,4,4,4,4,4,4,4,4,4,4,1,0],
+                [0,1,4,4,4,4,4,5,5,4,4,4,4,4,1,0],
+                [0,1,4,4,4,5,5,5,5,5,4,4,4,4,1,0],
+                [0,1,4,4,4,4,5,5,5,4,4,4,4,4,1,0],
+                [0,1,4,4,4,4,4,4,4,4,4,4,4,4,1,0],
+                [0,0,1,4,4,4,4,4,4,4,4,4,4,1,0,0],
+                [0,0,1,1,4,4,4,4,4,4,4,4,1,1,0,0],
+                [0,0,0,1,1,4,4,4,4,4,4,1,1,0,0,0],
+                [0,0,0,1,4,4,4,4,4,4,4,4,1,0,0,0],
+                [0,0,0,1,4,4,4,0,0,4,4,4,1,0,0,0],
+                [0,0,0,1,1,1,1,0,0,1,1,1,1,0,0,0]
+            ];
+
+            const colors = {
+                0: 'transparent',
+                1: '#000000',
+                2: avatar.skinTone,
+                3: avatar.eyeColor,
+                4: avatar.baseColor,
+                5: avatar.baseColor
+            };
+
+            avatarElement.innerHTML = '';
+            pixelData.forEach(row => {
+                row.forEach(colorKey => {
+                    const pixel = document.createElement('div');
+                    pixel.className = 'pixel';
+                    pixel.style.backgroundColor = colors[colorKey];
+                    avatarElement.appendChild(pixel);
+                });
+            });
+        }
+
+        // UIの更新
+        function updateUI() {
+            const player = gameData.player;
+            const level = player.level;
+            const nextLevelExp = calculateExpForLevel(level + 1);
+            const expProgress = calculateExpProgress(player.totalExp);
+
+            document.getElementById('playerName').textContent = player.name;
+            document.getElementById('playerLevel').textContent = `Lv. ${level} (${Math.floor(player.totalExp)} / ${nextLevelExp} EXP)`;
+            document.getElementById('expProgress').style.width = `${expProgress * 100}%`;
+
+            // スキル表示更新
+            document.getElementById('growthSkill').textContent = `Lv.${player.skills['成長スキル'].level} (x${player.skills['成長スキル'].multiplier})`;
+            document.getElementById('entertainmentSkill').textContent = `Lv.${player.skills['娯楽スキル'].level} (x${player.skills['娯楽スキル'].multiplier})`;
+            document.getElementById('lifeSkill').textContent = `Lv.${player.skills['生活スキル'].level} (x${player.skills['生活スキル'].multiplier})`;
+
+            drawPixelAvatar();
+        }
+
+        // 支出リストの更新
+        function updateExpensesList() {
+            const expensesList = document.getElementById('expensesList');
+            
+            if (gameData.expenses.length === 0) {
+                expensesList.innerHTML = '<div class="no-expenses">今日の支出はまだありません</div>';
+                return;
+            }
+
+            expensesList.innerHTML = '';
+            gameData.expenses.forEach(expense => {
+                const expenseDiv = document.createElement('div');
+                expenseDiv.className = 'expense-item';
+                expenseDiv.innerHTML = `
+                    <div class="expense-info">
+                        <div class="expense-amount">¥${expense.amount.toLocaleString()}</div>
+                        <div class="expense-category">${expense.category}</div>
+                        <div class="expense-exp">+${expense.expGained} EXP</div>
+                        ${expense.memo ? `<div style="color: #666; font-size: 12px; margin-top: 5px;">${expense.memo}</div>` : ''}
+                    </div>
+                    <div class="expense-actions">
+                        <button onclick="deleteExpense(${expense.id})">削除</button>
+                    </div>
+                `;
+                expensesList.appendChild(expenseDiv);
+            });
+        }
+
+        // メッセージ表示
+        function showMessage(text) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.classList.add('show');
+            
+            setTimeout(() => {
+                messageDiv.classList.remove('show');
+            }, 3000);
+        }
+
+        // 支出追加
+        function addExpense() {
+            const amount = parseInt(document.getElementById('amountInput').value);
+            const category = document.getElementById('categorySelect').value;
+            const memo = document.getElementById('memoInput').value;
+
+            if (!amount || amount <= 0) {
+                alert('正しい金額を入力してください');
+                return;
+            }
+
+            // EXP計算
+            const baseExp = Math.floor(amount / 100);
+            const categoryMultiplier = gameData.player.skills[category].multiplier;
+            const expGained = Math.floor(baseExp * categoryMultiplier);
+
+            // 支出データ作成
+            const expense = {
+                id: Date.now(),
+                amount: amount,
+                category: category,
+                memo: memo,
+                date: new Date(),
+                expGained: expGained
+            };
+
+            // プレイヤーデータ更新
+            const oldLevel = gameData.player.level;
+            gameData.player.totalExp += expGained;
+            gameData.player.skills[category].exp += expGained;
+            gameData.player.level = calculateLevel(gameData.player.totalExp);
+
+            // スキルレベル更新
+            Object.keys(gameData.player.skills).forEach(skillKey => {
+                const skill = gameData.player.skills[skillKey];
+                skill.level = calculateLevel(skill.exp);
+            });
+
+            // レベルアップ時の色変更
+            if (gameData.player.level > oldLevel) {
+                if (gameData.player.level > 5) {
+                    gameData.player.avatar.baseColor = '#10B981';
+                }
+                if (gameData.player.level > 10) {
+                    gameData.player.avatar.baseColor = '#8B5CF6';
+                }
+                if (gameData.player.level > 15) {
+                    gameData.player.avatar.baseColor = '#F59E0B';
+                }
+            }
+
+            // 支出リストに追加
+            gameData.expenses.unshift(expense);
+
+            // UI更新
+            updateUI();
+            updateExpensesList();
+
+            // フォームリセット
+            document.getElementById('amountInput').value = '';
+            document.getElementById('memoInput').value = '';
+            document.getElementById('expenseForm').classList.add('hidden');
+            document.getElementById('toggleFormBtn').textContent = '支出を追加';
+
+            // メッセージ表示
+            showMessage(`+${expGained} EXP獲得！`);
+        }
+
+        // 支出削除
+        function deleteExpense(expenseId) {
+            const expense = gameData.expenses.find(e => e.id === expenseId);
+            if (!expense) return;
+
+            // プレイヤーデータ更新
+            gameData.player.totalExp -= expense.expGained;
+            gameData.player.skills[expense.category].exp -= expense.expGained;
+            gameData.player.level = calculateLevel(gameData.player.totalExp);
+
+            // スキルレベル更新
+            Object.keys(gameData.player.skills).forEach(skillKey => {
+                const skill = gameData.player.skills[skillKey];
+                skill.level = calculateLevel(skill.exp);
+            });
+
+            // 支出リストから削除
+            gameData.expenses = gameData.expenses.filter(e => e.id !== expenseId);
+
+            // UI更新
+            updateUI();
+            updateExpensesList();
+
+            // メッセージ表示
+            showMessage(`-${expense.expGained} EXP`);
+        }
+
+        // イベントリスナー
+        document.getElementById('toggleFormBtn').addEventListener('click', function() {
+            const form = document.getElementById('expenseForm');
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+                this.textContent = 'キャンセル';
+            } else {
+                form.classList.add('hidden');
+                this.textContent = '支出を追加';
+            }
+        });
+
+        document.getElementById('addExpenseBtn').addEventListener('click', addExpense);
+
+        document.getElementById('cancelBtn').addEventListener('click', function() {
+            document.getElementById('expenseForm').classList.add('hidden');
+            document.getElementById('toggleFormBtn').textContent = '支出を追加';
+        });
+
+        // 初期化
+        updateUI();
+        updateExpensesList();
+    </script>
+</body>
+</html>

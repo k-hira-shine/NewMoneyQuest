@@ -14,81 +14,68 @@ const PixelAvatar: React.FC<PixelAvatarProps> = ({
   animated = false,
   showLevelUp = false 
 }) => {
-  const pixelSize = size / 16; // 16x16ピクセルベース
-
   // ドット絵スタイル
   const pixelStyle = {
     width: `${size}px`,
     height: `${size}px`,
+    display: 'grid',
+    gridTemplateColumns: 'repeat(16, 1fr)',
+    gridTemplateRows: 'repeat(16, 1fr)',
     imageRendering: 'pixelated' as const,
     position: 'relative' as const,
-    display: 'inline-block'
   };
 
-  // 基本キャラクター（16x16のボックスシャドウ）
-  const createPixelChar = () => {
-    
-    // 頭部 (上部4行)
-    const headPixels = [
-      // 行1: 帽子/髪の輪郭
+  // 基本キャラクター（16x16のピクセルデータ）
+  const createPixelData = () => {
+    const pixelData = [
       [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
-      // 行2: 髪の毛
       [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
-      // 行3: 顔の輪郭
       [0,1,1,2,2,2,2,2,2,2,2,2,2,1,1,0],
-      // 行4: 目と顔
-      [0,1,2,2,3,2,2,2,2,2,2,3,2,2,1,0]
-    ];
-
-    // 胴体 (中央8行)
-    const bodyPixels = [
-      // 行5-6: 首/肩
-      [0,0,1,2,2,2,2,2,2,2,2,2,2,1,0,0],
+      [0,1,2,2,3,3,2,2,2,2,3,3,2,2,1,0],
+      [0,1,2,2,2,2,2,2,2,2,2,2,2,2,1,0],
       [0,1,4,4,4,4,4,4,4,4,4,4,4,4,1,0],
-      // 行7-10: メインボディ
       [0,1,4,4,4,4,4,5,5,4,4,4,4,4,1,0],
-      [0,1,4,4,4,4,5,5,5,5,4,4,4,4,1,0],
-      [0,1,4,4,4,4,4,5,5,4,4,4,4,4,1,0],
+      [0,1,4,4,4,5,5,5,5,5,4,4,4,4,1,0],
+      [0,1,4,4,4,4,5,5,5,4,4,4,4,4,1,0],
       [0,1,4,4,4,4,4,4,4,4,4,4,4,4,1,0],
-      // 行11-12: 腰部
       [0,0,1,4,4,4,4,4,4,4,4,4,4,1,0,0],
-      [0,0,1,1,4,4,4,4,4,4,4,4,1,1,0,0]
-    ];
-
-    // 脚部 (下部4行)
-    const legPixels = [
+      [0,0,1,1,4,4,4,4,4,4,4,4,1,1,0,0],
       [0,0,0,1,1,4,4,4,4,4,4,1,1,0,0,0],
       [0,0,0,1,4,4,4,4,4,4,4,4,1,0,0,0],
       [0,0,0,1,4,4,4,0,0,4,4,4,1,0,0,0],
       [0,0,0,1,1,1,1,0,0,1,1,1,1,0,0,0]
     ];
-
-    const allPixels = [...headPixels, ...bodyPixels, ...legPixels];
     
-    // 色の定義
-    const colors = {
+    return pixelData;
+  };
+
+  // 色の定義
+  const getColors = () => {
+    return {
       0: 'transparent',
       1: '#000000',           // 輪郭
-      2: config.skinTone,     // 肌
-      3: config.eyeColor,     // 目
-      4: config.baseColor,    // 服
+      2: config.skinTone || '#FDBCB4',     // 肌
+      3: config.eyeColor || '#000000',     // 目
+      4: config.baseColor || '#6B7280',    // 服
       5: getAccessoryColor()  // アクセサリー色
     };
+  };
 
-    // ボックスシャドウ用の文字列生成
-    let boxShadow = '';
-    for (let y = 0; y < 16; y++) {
-      for (let x = 0; x < 16; x++) {
-        const colorKey = allPixels[y][x];
-        if (colorKey !== 0) {
-          const color = colors[colorKey as keyof typeof colors];
-          if (boxShadow) boxShadow += ', ';
-          boxShadow += `${x * pixelSize}px ${y * pixelSize}px 0 ${color}`;
-        }
-      }
-    }
-
-    return boxShadow;
+  // ピクセルグリッドを生成
+  const renderPixelGrid = () => {
+    const pixelData = createPixelData();
+    const colors = getColors();
+    
+    return pixelData.flat().map((colorKey, index) => (
+      <div
+        key={index}
+        style={{
+          backgroundColor: colors[colorKey as keyof typeof colors],
+          width: '100%',
+          height: '100%'
+        }}
+      />
+    ));
   };
 
   // アクセサリーの色を取得
@@ -167,10 +154,11 @@ const PixelAvatar: React.FC<PixelAvatarProps> = ({
         style={{
           ...pixelStyle,
           ...getAuraEffect(),
-          boxShadow: createPixelChar()
         }}
         className={showLevelUp ? 'animate-bounce' : ''}
-      />
+      >
+        {renderPixelGrid()}
+      </div>
       
       {/* 武器/道具 */}
       {config.weapon && (

@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyQuest - 名前変更機能付き</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        .profile {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+        .avatar {
+            width: 64px;
+            height: 64px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin-right: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .pixel-avatar {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(16, 1fr);
+            grid-template-rows: repeat(16, 1fr);
+            image-rendering: pixelated;
+        }
+        .pixel {
+            width: 100%;
+            height: 100%;
+        }
+        .profile-info h2 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+        .edit-name-btn {
+            background: none;
+            border: none;
+            color: #007bff;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .edit-name-btn:hover {
+            background: #f0f0f0;
+        }
+        .profile-info p {
+            margin: 0 0 10px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .exp-bar {
+            width: 250px;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        .exp-progress {
+            height: 100%;
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            transition: width 0.3s ease;
+        }
+        .skills {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        .skill-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        .skill-name {
+            display: flex;
+            align-items: center;
+        }
+        .skill-icon {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        .form-section {
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .form-group select {
+            background: white;
+        }
+        .button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #45a049;
+        }
+        .button.secondary {
+            background: #f44336;
+        }
+        .button.secondary:hover {
+            background: #da190b;
+        }
+        .expense-list {
+            margin-top: 20px;
+        }
+        .expense-item {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .expense-info {
+            flex: 1;
+        }
+        .expense-amount {
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+        }
+        .expense-category {
+            color: #666;
+            font-size: 13px;
+            margin: 5px 0;
+        }
+        .expense-exp {
+            color: #4CAF50;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .expense-memo {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        .expense-actions button {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .expense-actions button:hover {
+            background: #da190b;
+        }
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        .message.show {
+            transform: translateX(0);
+        }
+        .hidden {
+            display: none;
+        }
+        .no-expenses {
+            text-align: center;
+            color: #666;
+            padding: 30px;
+            font-style: italic;
+        }
+        .aura-glow {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+        }
+        .aura-sparkle {
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.8);
+        }
+        .aura-radiance {
+            box-shadow: 0 0 30px rgba(251, 191, 36, 1.0);
+        }
+        .exp-calc-display {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        /* モーダルスタイル */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .modal h3 {
+            margin-top: 0;
+            text-align: center;
+            color: #333;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MoneyQuest</h1>
+        
+        <div class="profile">
+            <div class="avatar">
+                <div id="pixelAvatar" class="pixel-avatar"></div>
+            </div>
+            <div class="profile-info">
+                <h2>
+                    <span id="playerName">プレイヤー</span>
+                    <button class="edit-name-btn" onclick="showNameEditModal()">✏️</button>
+                </h2>
+                <p id="playerLevel">Lv. 1 (0 / 100 EXP)</p>
+                <div class="exp-bar">
+                    <div id="expProgress" class="exp-progress" style="width: 0%"></div>
+                </div>
+                <div class="skills">
+                    <div class="skill-row">
+                        <div class="skill-name">
+                            <span class="skill-icon">🎓</span>
+                            成長スキル
+                        </div>
+                        <span id="growthSkill">Lv.1 (x3.0)</span>
+                    </div>
+                    <div class="skill-row">
+                        <div class="skill-name">
+                            <span class="skill-icon">🎉</span>
+                            娯楽スキル
+                        </div>
+                        <span id="entertainmentSkill">Lv.1 (x1.5)</span>
+                    </div>
+                    <div class="skill-row">
+                        <div class="skill-name">
+                            <span class="skill-icon">🍔</span>
+                            生活スキル
+                        </div>
+                        <span id="lifeSkill">Lv.1 (x1.0)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <button id="toggleFormBtn" class="button">支出を追加</button>
+            
+            <div id="expenseForm" class="hidden" style="margin-top: 20px;">
+                <div class="form-group">
+                    <label>金額</label>
+                    <input type="number" id="amountInput" placeholder="例: 1000" min="1">
+                </div>
+                <div class="form-group">
+                    <label>カテゴリー</label>
+                    <select id="categorySelect">
+                        <option value="成長スキル">成長スキル</option>
+                        <option value="娯楽スキル">娯楽スキル</option>
+                        <option value="生活スキル">生活スキル</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>詳細カテゴリー</label>
+                    <select id="subCategorySelect">
+                        <option value="books">📚 書籍・学習</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>メモ</label>
+                    <input type="text" id="memoInput" placeholder="例: プログラミング参考書">
+                </div>
+                <div id="expCalcPreview" class="exp-calc-display"></div>
+                <button id="addExpenseBtn" class="button">追加</button>
+                <button id="cancelBtn" class="button secondary">キャンセル</button>
+            </div>
+        </div>
+        
+        <div class="expense-list">
+            <h3>今日の支出</h3>
+            <div id="expensesList">
+                <div class="no-expenses">今日の支出はまだありません</div>
+            </div>
+        </div>
+        
+        <div id="message" class="message"></div>
+    </div>
+
+    <!-- 名前編集モーダル -->
+    <div id="nameEditModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>名前を変更</h3>
+            <div class="form-group">
+                <label>新しい名前</label>
+                <input type="text" id="newNameInput" placeholder="新しい名前を入力" maxlength="20">
+            </div>
+            <div class="modal-buttons">
+                <button class="button" onclick="updatePlayerName()">変更</button>
+                <button class="button secondary" onclick="hideNameEditModal()">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 正しいサブカテゴリーマスターデータ
+        const SUB_CATEGORIES = {
+            '成長スキル': [
+                { id: 'books', name: '書籍・学習', icon: '📚', multiplier: 1.2 },
+                { id: 'skill', name: 'スキルアップ', icon: '💻', multiplier: 1.3 },
+                { id: 'tools', name: '仕事道具', icon: '🛠️', multiplier: 1.1 },
+                { id: 'health', name: '健康投資', icon: '🏃', multiplier: 1.0 }
+            ],
+            '娯楽スキル': [
+                { id: 'entertainment', name: 'エンタメ', icon: '🎬', multiplier: 1.0 },
+                { id: 'social', name: '交際費', icon: '🍻', multiplier: 1.2 },
+                { id: 'leisure', name: 'レジャー', icon: '✈️', multiplier: 1.3 },
+                { id: 'hobby', name: '趣味', icon: '🎨', multiplier: 1.0 }
+            ],
+            '生活スキル': [
+                { id: 'food', name: '食費', icon: '🍱', multiplier: 1.0 },
+                { id: 'daily', name: '日用品', icon: '🧼', multiplier: 0.8 },
+                { id: 'transport', name: '交通・通信', icon: '🚃', multiplier: 1.0 },
+                { id: 'medical', name: '医療・美容', icon: '💊', multiplier: 1.2 }
+            ]
+        };
+
+        // ゲームデータ
+        let gameData = {
+            player: {
+                name: 'プレイヤー',
+                level: 1,
+                totalExp: 0,
+                skills: {
+                    '成長スキル': { level: 1, exp: 0, multiplier: 3.0 },
+                    '娯楽スキル': { level: 1, exp: 0, multiplier: 1.5 },
+                    '生活スキル': { level: 1, exp: 0, multiplier: 1.0 }
+                },
+                avatar: {
+                    baseColor: '#6B7280',
+                    skinTone: '#FDBCB4',
+                    eyeColor: '#000000',
+                    aura: 'none'
+                }
+            },
+            expenses: []
+        };
+
+        // LocalStorageからデータを読み込む
+        function loadGameData() {
+            const savedData = localStorage.getItem('moneyQuestData');
+            if (savedData) {
+                gameData = JSON.parse(savedData);
+                gameData.expenses.forEach(expense => {
+                    expense.date = new Date(expense.date);
+                });
+            }
+        }
+
+        // LocalStorageにデータを保存する
+        function saveGameData() {
+            localStorage.setItem('moneyQuestData', JSON.stringify(gameData));
+        }
+
+        // レベル計算
+        function calculateLevel(exp) {
+            return Math.floor(Math.sqrt(exp / 100)) + 1;
+        }
+
+        function calculateExpForLevel(level) {
+            return (level - 1) * (level - 1) * 100;
+        }
+
+        function calculateExpProgress(exp) {
+            const level = calculateLevel(exp);
+            const currentLevelExp = calculateExpForLevel(level);
+            const nextLevelExp = calculateExpForLevel(level + 1);
+            return (exp - currentLevelExp) / (nextLevelExp - currentLevelExp);
+        }
+
+        // サブカテゴリー取得
+        function getSubCategoryById(id) {
+            for (const category in SUB_CATEGORIES) {
+                const subCategory = SUB_CATEGORIES[category].find(sub => sub.id === id);
+                if (subCategory) return subCategory;
+            }
+            return null;
+        }
+
+        // EXP計算
+        function calculateExp(amount, category, subCategoryId) {
+            const baseExp = Math.floor(amount / 100);
+            const categoryMultiplier = gameData.player.skills[category].multiplier;
+            const subCategory = getSubCategoryById(subCategoryId);
+            const subCategoryMultiplier = subCategory ? subCategory.multiplier : 1;
+            
+            return Math.floor(baseExp * categoryMultiplier * subCategoryMultiplier);
+        }
+
+        // EXP計算プレビュー
+        function updateExpPreview() {
+            const amount = parseInt(document.getElementById('amountInput').value);
+            const category = document.getElementById('categorySelect').value;
+            const subCategoryId = document.getElementById('subCategorySelect').value;
+            
+            if (amount && category && subCategoryId) {
+                const exp = calculateExp(amount, category, subCategoryId);
+                const subCategory = getSubCategoryById(subCategoryId);
+                const baseExp = Math.floor(amount / 100);
+                const categoryMultiplier = gameData.player.skills[category].multiplier;
+                const subCategoryMultiplier = subCategory ? subCategory.multiplier : 1;
+                
+                document.getElementById('expCalcPreview').innerHTML = 
+                    `計算: ${baseExp} (基本) × ${categoryMultiplier} (${category}) × ${subCategoryMultiplier} (${subCategory?.name || ''}) = <strong>${exp} EXP</strong>`;
+            } else {
+                document.getElementById('expCalcPreview').innerHTML = '';
+            }
+        }
+
+        // 名前編集モーダル表示
+        function showNameEditModal() {
+            document.getElementById('newNameInput').value = gameData.player.name;
+            document.getElementById('nameEditModal').classList.remove('hidden');
+        }
+
+        // 名前編集モーダル非表示
+        function hideNameEditModal() {
+            document.getElementById('nameEditModal').classList.add('hidden');
+        }
+
+        // プレイヤー名前更新
+        function updatePlayerName() {
+            const newName = document.getElementById('newNameInput').value.trim();
+            if (newName && newName.length > 0) {
+                gameData.player.name = newName;
+                updateUI();
+                saveGameData();
+                hideNameEditModal();
+                showMessage('名前を変更しました！');
+            } else {
+                alert('有効な名前を入力してください');
+            }
+        }
+
+        // ピクセルアバターの描画
+        function drawPixelAvatar() {
+            const avatar = gameData.player.avatar;
+            const avatarElement = document.getElementById('pixelAvatar');
+            
+            const pixelData = [
+                [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+                [0,1,1,2,2,2,2,2,2,2,2,2,2,1,1,0],
+                [0,1,2,2,3,3,2,2,2,2,3,3,2,2,1,0],
+                [0,1,2,2,2,2,2,2,2,2,2,2,2,2,1,0],
+                [0,1,4,4,4,4,4,4,4,4,4,4,4,4,1,0],
+                [0,1,4,4,4,4,4,5,5,4,4,4,4,4,1,0],
+                [0,1,4,4,4,5,5,5,5,5,4,4,4,4,1,0],
+                [0,1,4,4,4,4,5,5,5,4,4,4,4,4,1,0],
+                [0,1,4,4,4,4,4,4,4,4,4,4,4,4,1,0],
+                [0,0,1,4,4,4,4,4,4,4,4,4,4,1,0,0],
+                [0,0,1,1,4,4,4,4,4,4,4,4,1,1,0,0],
+                [0,0,0,1,1,4,4,4,4,4,4,1,1,0,0,0],
+                [0,0,0,1,4,4,4,4,4,4,4,4,1,0,0,0],
+                [0,0,0,1,4,4,4,0,0,4,4,4,1,0,0,0],
+                [0,0,0,1,1,1,1,0,0,1,1,1,1,0,0,0]
+            ];
+
+            const colors = {
+                0: 'transparent',
+                1: '#000000',
+                2: avatar.skinTone,
+                3: avatar.eyeColor,
+                4: avatar.baseColor,
+                5: avatar.baseColor
+            };
+
+            avatarElement.className = 'pixel-avatar';
+            if (avatar.aura === 'glow') {
+                avatarElement.classList.add('aura-glow');
+            } else if (avatar.aura === 'sparkle') {
+                avatarElement.classList.add('aura-sparkle');
+            } else if (avatar.aura === 'radiance') {
+                avatarElement.classList.add('aura-radiance');
+            }
+
+            avatarElement.innerHTML = '';
+            pixelData.forEach(row => {
+                row.forEach(colorKey => {
+                    const pixel = document.createElement('div');
+                    pixel.className = 'pixel';
+                    pixel.style.backgroundColor = colors[colorKey];
+                    avatarElement.appendChild(pixel);
+                });
+            });
+        }
+
+        // UIの更新
+        function updateUI() {
+            const player = gameData.player;
+            const level = player.level;
+            const nextLevelExp = calculateExpForLevel(level + 1);
+            const expProgress = calculateExpProgress(player.totalExp);
+
+            document.getElementById('playerName').textContent = player.name;
+            document.getElementById('playerLevel').textContent = `Lv. ${level} (${Math.floor(player.totalExp)} / ${nextLevelExp} EXP)`;
+            document.getElementById('expProgress').style.width = `${expProgress * 100}%`;
+
+            document.getElementById('growthSkill').textContent = `Lv.${player.skills['成長スキル'].level} (x${player.skills['成長スキル'].multiplier})`;
+            document.getElementById('entertainmentSkill').textContent = `Lv.${player.skills['娯楽スキル'].level} (x${player.skills['娯楽スキル'].multiplier})`;
+            document.getElementById('lifeSkill').textContent = `Lv.${player.skills['生活スキル'].level} (x${player.skills['生活スキル'].multiplier})`;
+
+            drawPixelAvatar();
+        }
+
+        // サブカテゴリー選択肢の更新
+        function updateSubCategoryOptions() {
+            const category = document.getElementById('categorySelect').value;
+            const subCategorySelect = document.getElementById('subCategorySelect');
+            
+            subCategorySelect.innerHTML = '';
+            SUB_CATEGORIES[category].forEach(subCategory => {
+                const option = document.createElement('option');
+                option.value = subCategory.id;
+                option.textContent = `${subCategory.icon} ${subCategory.name} (x${subCategory.multiplier})`;
+                subCategorySelect.appendChild(option);
+            });
+            
+            updateExpPreview();
+        }
+
+        // 支出リストの更新
+        function updateExpensesList() {
+            const expensesList = document.getElementById('expensesList');
+            
+            if (gameData.expenses.length === 0) {
+                expensesList.innerHTML = '<div class="no-expenses">今日の支出はまだありません</div>';
+                return;
+            }
+
+            expensesList.innerHTML = '';
+            gameData.expenses.forEach(expense => {
+                const subCategory = getSubCategoryById(expense.subCategoryId);
+                const expenseDiv = document.createElement('div');
+                expenseDiv.className = 'expense-item';
+                expenseDiv.innerHTML = `
+                    <div class="expense-info">
+                        <div class="expense-amount">¥${expense.amount.toLocaleString()}</div>
+                        <div class="expense-category">${subCategory?.icon || ''} ${subCategory?.name || expense.category}</div>
+                        <div class="expense-exp">+${expense.expGained} EXP</div>
+                        <div class="exp-calc-display">${expense.calcDetails}</div>
+                        ${expense.memo ? `<div class="expense-memo">${expense.memo}</div>` : ''}
+                    </div>
+                    <div class="expense-actions">
+                        <button onclick="deleteExpense(${expense.id})">削除</button>
+                    </div>
+                `;
+                expensesList.appendChild(expenseDiv);
+            });
+        }
+
+        // メッセージ表示
+        function showMessage(text) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.classList.add('show');
+            
+            setTimeout(() => {
+                messageDiv.classList.remove('show');
+            }, 3000);
+        }
+
+        // 支出追加
+        function addExpense() {
+            const amount = parseInt(document.getElementById('amountInput').value);
+            const category = document.getElementById('categorySelect').value;
+            const subCategoryId = document.getElementById('subCategorySelect').value;
+            const memo = document.getElementById('memoInput').value;
+
+            if (!amount || amount <= 0) {
+                alert('正しい金額を入力してください');
+                return;
+            }
+
+            const expGained = calculateExp(amount, category, subCategoryId);
+            const baseExp = Math.floor(amount / 100);
+            const categoryMultiplier = gameData.player.skills[category].multiplier;
+            const subCategory = getSubCategoryById(subCategoryId);
+            const subCategoryMultiplier = subCategory ? subCategory.multiplier : 1;
+
+            const expense = {
+                id: Date.now(),
+                amount: amount,
+                category: category,
+                subCategoryId: subCategoryId,
+                memo: memo,
+                date: new Date(),
+                expGained: expGained,
+                calcDetails: `${baseExp} × ${categoryMultiplier} × ${subCategoryMultiplier} = ${expGained}`
+            };
+
+            const oldLevel = gameData.player.level;
+            gameData.player.totalExp += expGained;
+            gameData.player.skills[category].exp += expGained;
+            gameData.player.level = calculateLevel(gameData.player.totalExp);
+
+            Object.keys(gameData.player.skills).forEach(skillKey => {
+                const skill = gameData.player.skills[skillKey];
+                skill.level = calculateLevel(skill.exp);
+            });
+
+            if (gameData.player.level > oldLevel) {
+                if (gameData.player.level > 5) {
+                    gameData.player.avatar.aura = 'glow';
+                    gameData.player.avatar.baseColor = '#10B981';
+                }
+                if (gameData.player.level > 15) {
+                    gameData.player.avatar.aura = 'sparkle';
+                    gameData.player.avatar.baseColor = '#8B5CF6';
+                }
+                if (gameData.player.level > 25) {
+                    gameData.player.avatar.aura = 'radiance';
+                    gameData.player.avatar.baseColor = '#F59E0B';
+                }
+            }
+
+            gameData.expenses.unshift(expense);
+            saveGameData();
+            updateUI();
+            updateExpensesList();
+
+            document.getElementById('amountInput').value = '';
+            document.getElementById('memoInput').value = '';
+            document.getElementById('expenseForm').classList.add('hidden');
+            document.getElementById('toggleFormBtn').textContent = '支出を追加';
+
+            showMessage(`+${expGained} EXP獲得！`);
+        }
+
+        // 支出削除
+        function deleteExpense(expenseId) {
+            const expense = gameData.expenses.find(e => e.id === expenseId);
+            if (!expense) return;
+
+            gameData.player.totalExp -= expense.expGained;
+            gameData.player.skills[expense.category].exp -= expense.expGained;
+            gameData.player.level = calculateLevel(gameData.player.totalExp);
+
+            Object.keys(gameData.player.skills).forEach(skillKey => {
+                const skill = gameData.player.skills[skillKey];
+                skill.level = calculateLevel(skill.exp);
+            });
+
+            gameData.expenses = gameData.expenses.filter(e => e.id !== expenseId);
+            saveGameData();
+            updateUI();
+            updateExpensesList();
+
+            showMessage(`-${expense.expGained} EXP`);
+        }
+
+        // イベントリスナー
+        document.getElementById('toggleFormBtn').addEventListener('click', function() {
+            const form = document.getElementById('expenseForm');
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+                this.textContent = 'キャンセル';
+            } else {
+                form.classList.add('hidden');
+                this.textContent = '支出を追加';
+            }
+        });
+
+        document.getElementById('categorySelect').addEventListener('change', updateSubCategoryOptions);
+        document.getElementById('subCategorySelect').addEventListener('change', updateExpPreview);
+        document.getElementById('amountInput').addEventListener('input', updateExpPreview);
+        document.getElementById('addExpenseBtn').addEventListener('click', addExpense);
+        document.getElementById('cancelBtn').addEventListener('click', function() {
+            document.getElementById('expenseForm').classList.add('hidden');
+            document.getElementById('toggleFormBtn').textContent = '支出を追加';
+        });
+
+        // モーダル外クリックで閉じる
+        document.getElementById('nameEditModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideNameEditModal();
+            }
+        });
+
+        // Enterキーで名前変更
+        document.getElementById('newNameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                updatePlayerName();
+            }
+        });
+
+        // 初期化
+        loadGameData();
+        updateSubCategoryOptions();
+        updateUI();
+        updateExpensesList();
+    </script>
+</body>
+</html>
